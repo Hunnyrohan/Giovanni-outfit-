@@ -1,18 +1,58 @@
 class ApiConstants {
   ApiConstants._();
 
-  // The dev backend is reached through an adb USB tunnel, because this
-  // network blocks direct phone->PC traffic (verified: ping 100% loss).
-  // The tunnel maps the device's 127.0.0.1:3000 to the PC's port 3000:
-  //
-  //   adb reverse tcp:3000 tcp:3000
-  //
-  // Run that once after (re)connecting the USB cable - it works for both
-  // real phones and the emulator. If you ever run the app untethered on
-  // Wi-Fi instead, switch baseUrl to the PC's LAN IP (e.g.
-  // http://192.168.1.87:3000/api) and allow port 3000 through the Windows
-  // firewall as administrator.
-  static const String baseUrl = 'http://127.0.0.1:3000/api';
+  /// Port the dev backend listens on.
+  static const int apiPort = 3000;
+
+  /// Host used when nothing has been probed yet. Overridable at build time:
+  ///
+  ///   flutter run --dart-define=API_HOST=192.168.1.69
+  ///
+  /// An explicit override is always tried first and is the escape hatch for a
+  /// setup the candidate list below doesn't cover.
+  static const String _configuredHost = String.fromEnvironment('API_HOST');
+
+  /// The PC's LAN address, used when the app runs untethered over Wi-Fi.
+  /// This changes whenever the DHCP lease does, so it is only a fallback -
+  /// override it with `--dart-define=API_LAN_HOST=...` when it drifts.
+  static const String _lanHost = String.fromEnvironment(
+    'API_LAN_HOST',
+    defaultValue: '192.168.1.69',
+  );
+
+  /// Hosts to probe, in priority order. There is no single address that is
+  /// correct in every situation, which is why these are tried rather than
+  /// picked:
+  ///
+  ///   * `10.0.2.2`  - the Android emulator's alias for the PC's loopback.
+  ///                   Needs no tunnel and no firewall rule.
+  ///   * `127.0.0.1` - a real phone tethered over USB, valid only while
+  ///                   `adb reverse tcp:3000 tcp:3000` is alive (see
+  ///                   phone_tunnel.ps1). That mapping dies on every USB
+  ///                   reconnect, so it must never be assumed.
+  ///   * the LAN IP  - same Wi-Fi network, needs port 3000 open in the
+  ///                   Windows firewall.
+  ///
+  /// See ApiHostResolver, which probes these and caches the winner.
+  static const List<String> hostCandidates = <String>[
+    _configuredHost,
+    '10.0.2.2',
+    '127.0.0.1',
+    _lanHost,
+  ];
+
+  /// Base URL for all API calls. Mutable because the reachable host is only
+  /// known at runtime - [ApiHostResolver] rewrites this via [useHost] on
+  /// startup and again whenever the current host stops responding.
+  static String baseUrl = 'http://${_configuredHost.isNotEmpty ? _configuredHost : '10.0.2.2'}:$apiPort/api';
+
+  /// The host portion of [baseUrl].
+  static String get host => Uri.parse(baseUrl).host;
+
+  /// Repoints every subsequent request at [host].
+  static void useHost(String host) {
+    baseUrl = 'http://$host:$apiPort/api';
+  }
 
   static const int connectionTimeout = 15000;
   static const int receiveTimeout = 15000;

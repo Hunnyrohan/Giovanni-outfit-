@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Core
+import 'core/network/api_host_resolver.dart';
 import 'core/network/dio_client.dart';
 import 'core/storage/token_storage.dart';
 import 'core/theme/theme_provider.dart';
@@ -284,5 +285,6 @@ Future<void> init() async {
 
   // Network Client
   sl.registerLazySingleton(() => Dio());
-  sl.registerLazySingleton(() => DioClient(sl(), sl()));
+  sl.registerLazySingleton(() => ApiHostResolver(sl()));
+  sl.registerLazySingleton(() => DioClient(sl(), sl(), sl()));
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'app.dart';
+import 'core/network/api_host_resolver.dart';
 import 'core/theme/theme_provider.dart';
 import 'injection_container.dart' as di;
 import 'features/auth/presentation/providers/auth_provider.dart';
@@ -16,6 +17,11 @@ void main() async {
 
   // Initialize manual / GetIt dependency injection registry
   await di.init();
+
+  // Find a backend host this device can actually reach before the first
+  // request goes out. Bounded and best-effort: if nothing answers we keep the
+  // default host, and DioClient re-probes on the next connection failure.
+  await di.sl<ApiHostResolver>().resolve();
 
   runApp(
     MultiProvider(

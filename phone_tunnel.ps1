@@ -1,10 +1,15 @@
 # Keeps the phone->PC backend tunnel alive across USB reconnects.
 #
-# The app on a real phone reaches the dev backend via
+# OPTIONAL. The app no longer depends on this tunnel: ApiHostResolver probes
+# 10.0.2.2 (emulator), 127.0.0.1 (this tunnel) and the LAN IP at startup, and
+# re-probes whenever a request can't reach the backend. Losing the tunnel is
+# no longer what caused "No internet connection or server unreachable".
+#
+# It is still the fastest path for a real phone tethered over USB, where
 #   adb reverse tcp:3000 tcp:3000   (phone's 127.0.0.1:3000 -> PC's :3000)
-# but that mapping dies every time the USB connection drops. Run this script
-# in its own terminal and leave it running - it re-creates the tunnel
-# automatically on every reconnect.
+# avoids depending on the LAN IP and the Windows firewall. That mapping dies
+# every time the USB connection drops. Run this script in its own terminal and
+# leave it running - it re-creates the tunnel automatically on every reconnect.
 #
 #   powershell -ExecutionPolicy Bypass -File .\phone_tunnel.ps1
 

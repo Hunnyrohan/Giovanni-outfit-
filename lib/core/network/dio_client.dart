@@ -1,13 +1,19 @@
 import 'package:dio/dio.dart';
 import '../constants/api_constants.dart';
 import '../storage/token_storage.dart';
+import 'api_host_resolver.dart';
 
 class DioClient {
   final Dio dio;
   final TokenStorage tokenStorage;
+  final ApiHostResolver hostResolver;
   Future<String?>? _refreshFuture;
 
-  DioClient(this.dio, this.tokenStorage) {
+  /// Marks a request that has already been retried against a freshly resolved
+  /// host, so a genuinely unreachable backend fails instead of looping.
+  static const String _hostRetriedFlag = 'host_retried';
+
+  DioClient(this.dio, this.tokenStorage, this.hostResolver) {
     dio
       ..options.baseUrl = ApiConstants.baseUrl
       ..options.connectTimeout = const Duration(
@@ -25,6 +31,10 @@ class DioClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
+          // Read the base URL per request rather than once at construction:
+          // the resolver may have repointed us at a different host since.
+          options.baseUrl = ApiConstants.baseUrl;
+
           final token = await tokenStorage.getToken();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
@@ -34,12 +44,55 @@ class DioClient {
         onError: (DioException e, handler) {
           if (e.response?.statusCode == 401) {
             _handleTokenRefresh(e, handler);
+          } else if (_isConnectionFailure(e)) {
+            _handleHostRefresh(e, handler);
           } else {
             return handler.next(e);
           }
         },
       ),
     );
+  }
+
+  /// Whether [e] looks like "couldn't reach the backend at all", as opposed to
+  /// the backend answering with an error.
+  static bool _isConnectionFailure(DioException e) =>
+      e.type == DioExceptionType.connectionError ||
+      e.type == DioExceptionType.connectionTimeout;
+
+  /// Re-probes for a reachable host and replays the request once.
+  ///
+  /// This is what stops a dropped `adb reverse` tunnel (or a changed LAN IP)
+  /// from surfacing as "No internet connection or server unreachable" on the
+  /// login screen: the request that would have failed transparently moves to
+  /// whichever host is actually up.
+  Future<void> _handleHostRefresh(
+    DioException e,
+    ErrorInterceptorHandler handler,
+  ) async {
+    final options = e.requestOptions;
+
+    if (options.extra[_hostRetriedFlag] == true) {
+      return handler.next(e);
+    }
+
+    final previousHost = ApiConstants.host;
+    final resolvedHost = await hostResolver.resolve(forceRefresh: true);
+
+    if (resolvedHost == previousHost) {
+      // Nothing else answered either - the backend is genuinely down.
+      return handler.next(e);
+    }
+
+    try {
+      options
+        ..extra[_hostRetriedFlag] = true
+        ..baseUrl = ApiConstants.baseUrl;
+      final retryResponse = await dio.fetch(options);
+      return handler.resolve(retryResponse);
+    } catch (_) {
+      return handler.next(e);
+    }
   }
 
   Future<void> _handleTokenRefresh(
