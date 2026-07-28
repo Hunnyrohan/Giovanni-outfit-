@@ -35,7 +35,9 @@ class RecommendationTile extends StatelessWidget {
             child: Text(
               text,
               style: GoogleFonts.outfit(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : const Color(0xFF1E1E1E),
                 fontSize: 14 * scale,
                 fontWeight: FontWeight.w400,
                 height: 1.05,

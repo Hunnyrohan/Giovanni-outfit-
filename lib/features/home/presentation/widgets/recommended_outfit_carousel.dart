@@ -81,29 +81,36 @@ class _RecommendedOutfitCarouselState extends State<RecommendedOutfitCarousel> {
           ),
         ),
         const SizedBox(height: 1),
-        SizedBox(
-          width: 143,
-          height: 32,
-          child: OutlinedButton(
-            onPressed: () {},
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.white,
-              side: const BorderSide(color: Colors.white, width: 1.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+        Builder(builder: (context) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+          final outline = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
+          return SizedBox(
+            width: 143,
+            height: 32,
+            child: OutlinedButton(
+              onPressed: () {},
+              style: OutlinedButton.styleFrom(
+                foregroundColor: outline,
+                side: BorderSide(color: outline, width: 1.1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                backgroundColor: isDark
+                    ? Colors.black.withValues(alpha: 0.1)
+                    : Colors.white.withValues(alpha: 0.4),
               ),
-              backgroundColor: Colors.black.withValues(alpha: 0.1),
-            ),
-            child: Text(
-              'Try this virtually',
-              style: GoogleFonts.poppins(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
+              child: Text(
+                'Try this virtually',
+                style: GoogleFonts.poppins(
+                  color: outline,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-        ),
+          );
+        }),
       ],
     );
   }

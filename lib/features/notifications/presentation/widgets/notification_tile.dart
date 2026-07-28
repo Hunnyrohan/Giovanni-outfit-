@@ -11,11 +11,16 @@ class NotificationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onScreen = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
     return Container(
       height: 57,
       padding: const EdgeInsets.fromLTRB(13, 8, 12, 7),
       decoration: BoxDecoration(
-        color: const Color(0xff545454).withValues(alpha: 0.72),
+        color: isDark
+            ? const Color(0xff545454).withValues(alpha: 0.72)
+            : Colors.black.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(9),
       ),
       child: Row(
@@ -57,7 +62,7 @@ class NotificationTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.outfit(
-                          color: Colors.white,
+                          color: onScreen,
                           fontSize: 12.8,
                           fontWeight: FontWeight.w400,
                           letterSpacing: 0,
@@ -74,7 +79,7 @@ class NotificationTile extends StatelessWidget {
                 Text(
                   item.time,
                   style: GoogleFonts.outfit(
-                    color: Colors.white,
+                    color: onScreen,
                     fontSize: 9.5,
                     fontWeight: FontWeight.w300,
                   ),

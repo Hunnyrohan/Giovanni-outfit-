@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../shared/widgets/app_ambient_background.dart';
 import '../providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -48,19 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            colors: [
-              Color(0xff33271b), // Warm goldish center glow
-              Color(0xff120f17), // Deep purple-black ambient transition
-              Color(0xff0b090d), // Dark edge
-            ],
-            stops: [0.0, 0.65, 1.0],
-            center: Alignment(0.1, 0.05), // Slightly off-center glow matching visual references
-            radius: 1.3,
-          ),
-        ),
+      body: AppAmbientBackground(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -105,7 +94,9 @@ class _SplashScreenState extends State<SplashScreen> {
                 'Personal AI stylist',
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey.shade400,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey.shade400
+                      : const Color(0xFF6E6A70),
                   letterSpacing: 0.8,
                   fontWeight: FontWeight.w400,
                 ),

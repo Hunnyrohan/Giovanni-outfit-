@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../injection_container.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/style_profile_provider.dart';
 import '../widgets/last_outfit_list.dart';
 import '../widgets/profile_add_collection_button.dart';
@@ -15,7 +17,7 @@ class StyleProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => StyleProfileProvider(),
+      create: (_) => sl<StyleProfileProvider>(),
       child: const _StyleProfileView(),
     );
   }
@@ -30,9 +32,12 @@ class _StyleProfileView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<StyleProfileProvider>();
+    final authUser = context.watch<AuthProvider>().currentUser;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final background = isDark ? const Color(0xff050505) : const Color(0xffF3F1EF);
 
     return Scaffold(
-      backgroundColor: const Color(0xff050505),
+      backgroundColor: background,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final widthScale = constraints.maxWidth / _designWidth;
@@ -51,11 +56,11 @@ class _StyleProfileView extends StatelessWidget {
                   width: _designWidth,
                   height: _designHeight,
                   child: provider.isLoading
-                      ? const ColoredBox(color: Color(0xff050505))
+                      ? ColoredBox(color: background)
                       : Stack(
                           children: [
-                            const Positioned.fill(
-                              child: ColoredBox(color: Color(0xff050505)),
+                            Positioned.fill(
+                              child: ColoredBox(color: background),
                             ),
                             const Positioned(
                               top: 0,
@@ -73,8 +78,8 @@ class _StyleProfileView extends StatelessWidget {
                               left: 0,
                               right: 0,
                               child: ProfileAvatarLarge(
-                                imageUrl: provider.profile.avatarImage,
-                                name: provider.profile.name,
+                                imageUrl: authUser?.profilePicture,
+                                name: authUser?.name ?? provider.profile.name,
                               ),
                             ),
                             Positioned(
@@ -127,20 +132,28 @@ class _ProfileTopCurve extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ClipPath(
       clipper: _ProfileTopCurveClipper(),
       child: Container(
         width: 351,
         height: 145,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.centerRight,
-            colors: [
-              Color(0xffd66868),
-              Color(0xffb1a5a5),
-              Color(0xffa9a9a9),
-            ],
+            colors: isDark
+                ? const [
+                    Color(0xffd66868),
+                    Color(0xffb1a5a5),
+                    Color(0xffa9a9a9),
+                  ]
+                : const [
+                    Color(0xffEDA5A5),
+                    Color(0xffDFD6D4),
+                    Color(0xffDCDAD8),
+                  ],
           ),
         ),
       ),

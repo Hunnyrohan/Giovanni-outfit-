@@ -39,15 +39,20 @@ class OutfitCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            CachedNetworkImage(
-              imageUrl: _imageUrlFor(type),
+            Image.asset(
+              _assetPathFor(type),
               fit: BoxFit.cover,
               alignment: _imageAlignmentFor(type),
-              placeholder: (_, _) => CustomPaint(
-                painter: _OutfitCardPainter(type),
-              ),
-              errorWidget: (_, _, _) => CustomPaint(
-                painter: _OutfitCardPainter(type),
+              errorBuilder: (_, _, _) => CachedNetworkImage(
+                imageUrl: _imageUrlFor(type),
+                fit: BoxFit.cover,
+                alignment: _imageAlignmentFor(type),
+                placeholder: (_, _) => CustomPaint(
+                  painter: _OutfitCardPainter(type),
+                ),
+                errorWidget: (_, _, _) => CustomPaint(
+                  painter: _OutfitCardPainter(type),
+                ),
               ),
             ),
             Positioned(
@@ -73,6 +78,17 @@ class OutfitCard extends StatelessWidget {
     );
   }
 
+  String _assetPathFor(OutfitVisualType type) {
+    return switch (type) {
+      OutfitVisualType.whiteOutfit => 'assets/images/virtual_wear/white_outfit.png',
+      OutfitVisualType.creamBlazer => 'assets/images/virtual_wear/cream_blazer.png',
+      OutfitVisualType.navyDress => 'assets/images/virtual_wear/navy_dress.png',
+      OutfitVisualType.beigeJacket => 'assets/images/virtual_wear/beige_jacket.png',
+      OutfitVisualType.casualSet => 'assets/images/virtual_wear/casual_set.png',
+      OutfitVisualType.dateDress => 'assets/images/virtual_wear/date_dress.png',
+    };
+  }
+
   String _imageUrlFor(OutfitVisualType type) {
     return switch (type) {
       OutfitVisualType.whiteOutfit =>
@@ -91,12 +107,7 @@ class OutfitCard extends StatelessWidget {
   }
 
   Alignment _imageAlignmentFor(OutfitVisualType type) {
-    return switch (type) {
-      OutfitVisualType.whiteOutfit => const Alignment(-0.25, -0.2),
-      OutfitVisualType.creamBlazer => Alignment.topCenter,
-      OutfitVisualType.navyDress => const Alignment(0.25, -0.2),
-      _ => Alignment.topCenter,
-    };
+    return Alignment.topCenter;
   }
 }
 

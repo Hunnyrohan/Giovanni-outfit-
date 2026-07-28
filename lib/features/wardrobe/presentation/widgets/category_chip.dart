@@ -15,6 +15,14 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeBg = isDark ? Colors.white : const Color(0xFF1E1E1E);
+    final activeFg = isDark ? Colors.black : Colors.white;
+    final inactiveBg = isDark
+        ? const Color(0xff6b686b).withValues(alpha: 0.88)
+        : Colors.black.withValues(alpha: 0.07);
+    final inactiveFg = isDark ? const Color(0xffc9c9c9) : const Color(0xFF4A4A4A);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -26,9 +34,7 @@ class CategoryChip extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(19),
-          color: isActive
-              ? Colors.white
-              : const Color(0xff6b686b).withValues(alpha: 0.88),
+          color: isActive ? activeBg : inactiveBg,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -36,7 +42,7 @@ class CategoryChip extends StatelessWidget {
             Text(
               label,
               style: GoogleFonts.outfit(
-                color: isActive ? Colors.black : const Color(0xffc9c9c9),
+                color: isActive ? activeFg : inactiveFg,
                 fontSize: 16,
                 fontWeight: FontWeight.w300,
                 letterSpacing: 0,
@@ -47,7 +53,7 @@ class CategoryChip extends StatelessWidget {
               isActive
                   ? Icons.keyboard_arrow_down_rounded
                   : Icons.chevron_right_rounded,
-              color: isActive ? Colors.black : const Color(0xffbfbfbf),
+              color: isActive ? activeFg : inactiveFg,
               size: isActive ? 22 : 21,
             ),
           ],

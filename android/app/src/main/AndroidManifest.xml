@@ -1,8 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- usesCleartextTraffic: the dev backend runs over plain http on the
+         local network (http://192.168.x.x:3000). Android 9+ blocks cleartext
+         requests by default, which would surface as connection timeouts on
+         real devices. Remove this (and switch to https) for production. -->
     <application
         android:label="outfit_ai_app"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

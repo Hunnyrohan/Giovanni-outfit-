@@ -31,20 +31,27 @@ class _AddCollectionScreenState extends State<AddCollectionScreen> {
   Widget build(BuildContext context) {
     final wardrobeProvider = context.watch<WardrobeProvider>();
     final items = wardrobeProvider.filteredMarketplaceItems;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: RadialGradient(
-            colors: [
-              Color(0xff2d231b), // Soft warm glow
-              Color(0xff121212), // Dark grey
-              Color(0xff050505), // Ultra black
-            ],
-            stops: [0.0, 0.7, 1.0],
-            center: Alignment(-0.5, -0.2),
+            colors: isDark
+                ? const [
+                    Color(0xff2d231b), // Soft warm glow
+                    Color(0xff121212), // Dark grey
+                    Color(0xff050505), // Ultra black
+                  ]
+                : const [
+                    Color(0xffEDE4D4), // Soft warm glow
+                    Color(0xffF3F1EF),
+                    Color(0xffEAE4EA),
+                  ],
+            stops: const [0.0, 0.7, 1.0],
+            center: const Alignment(-0.5, -0.2),
             radius: 1.5,
           ),
         ),
@@ -81,7 +88,7 @@ class _AddCollectionScreenState extends State<AddCollectionScreen> {
                             style: GoogleFonts.outfit(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: isDark ? Colors.white : const Color(0xFF1E1E1E),
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -109,17 +116,18 @@ class _AddCollectionScreenState extends State<AddCollectionScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     sliver: SliverToBoxAdapter(
                       child: wardrobeProvider.isLoading
-                          ? const Center(
+                          ? Center(
                               child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 80.0),
+                                padding: const EdgeInsets.symmetric(vertical: 80.0),
                                 child: CircularProgressIndicator(
-                                  color: Colors.white24,
+                                  color: isDark ? Colors.white24 : Colors.black26,
                                 ),
                               ),
                             )
                           : WardrobeGrid(
                               items: items,
                               isMarketplace: true,
+                              showRatingDetails: true,
                               onFavoriteTap: (item) {
                                 wardrobeProvider.toggleFavorite(item.id);
                               },
@@ -152,12 +160,12 @@ class _AddCollectionScreenState extends State<AddCollectionScreen> {
                         vertical: 14,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(
+                        color: (isDark ? Colors.white : Colors.black).withValues(
                           alpha: 0.08,
                         ), // Translucent glassmorphic style
                         borderRadius: BorderRadius.circular(30),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.1),
                           width: 1.0,
                         ),
                         boxShadow: [
@@ -172,9 +180,9 @@ class _AddCollectionScreenState extends State<AddCollectionScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.camera_alt_outlined,
-                            color: Colors.white,
+                            color: isDark ? Colors.white : const Color(0xFF1E1E1E),
                             size: 18,
                           ),
                           const SizedBox(width: 8),
@@ -183,7 +191,7 @@ class _AddCollectionScreenState extends State<AddCollectionScreen> {
                             style: GoogleFonts.outfit(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: isDark ? Colors.white : const Color(0xFF1E1E1E),
                               letterSpacing: 0.2,
                             ),
                           ),

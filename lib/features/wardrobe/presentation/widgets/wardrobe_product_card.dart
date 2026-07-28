@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/utils/currency.dart';
+
 class WardrobeProductCard extends StatelessWidget {
   final String imageUrl;
   final String title;
@@ -31,6 +33,9 @@ class WardrobeProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onScreen = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
@@ -95,7 +100,7 @@ class WardrobeProductCard extends StatelessWidget {
                     style: GoogleFonts.outfit(
                       fontSize: 6.8,
                       fontWeight: FontWeight.w300,
-                      color: Colors.white,
+                      color: onScreen,
                       height: 1,
                     ),
                   ),
@@ -111,7 +116,7 @@ class WardrobeProductCard extends StatelessWidget {
                     style: GoogleFonts.outfit(
                       fontSize: 6.8,
                       fontWeight: FontWeight.w300,
-                      color: Colors.white,
+                      color: onScreen,
                       height: 1,
                     ),
                   ),
@@ -121,7 +126,7 @@ class WardrobeProductCard extends StatelessWidget {
                     style: GoogleFonts.outfit(
                       fontSize: 6.8,
                       fontWeight: FontWeight.w300,
-                      color: Colors.white,
+                      color: onScreen,
                       height: 1,
                     ),
                   ),
@@ -142,7 +147,7 @@ class WardrobeProductCard extends StatelessWidget {
                         style: GoogleFonts.outfit(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w400,
-                          color: Colors.white,
+                          color: onScreen,
                           height: 1,
                           letterSpacing: 0,
                         ),
@@ -150,14 +155,14 @@ class WardrobeProductCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         price != null
-                            ? '\$${price!.toStringAsFixed(2)}'
+                            ? Currency.format(price!)
                             : subtitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.outfit(
                           fontSize: 8.5,
                           fontWeight: FontWeight.w300,
-                          color: Colors.white,
+                          color: onScreen,
                           height: 1,
                           letterSpacing: 0,
                         ),
@@ -173,11 +178,11 @@ class WardrobeProductCard extends StatelessWidget {
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(73, 23),
                         padding: const EdgeInsets.symmetric(horizontal: 8),
-                        side: const BorderSide(color: Colors.white, width: 1),
+                        side: BorderSide(color: onScreen, width: 1),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),
-                        foregroundColor: Colors.white,
+                        foregroundColor: onScreen,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         visualDensity: VisualDensity.compact,
                       ),
@@ -186,7 +191,7 @@ class WardrobeProductCard extends StatelessWidget {
                         style: GoogleFonts.outfit(
                           fontSize: 9,
                           fontWeight: FontWeight.w400,
-                          color: Colors.white,
+                          color: onScreen,
                           height: 1,
                         ),
                       ),

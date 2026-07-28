@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/routes/app_router.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/widgets/app_back_button.dart';
 import 'theme_toggle_button.dart';
 
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({super.key});
-
-  void _handleBack() {
-    AppRouter.router.go('/home');
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,36 +15,16 @@ class ProfileHeader extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Align(
+          const Align(
             alignment: Alignment.centerLeft,
-            child: Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: const Color(0xFF4D4D4D).withValues(alpha: 0.85),
-                shape: BoxShape.circle,
-              ),
-              child: Container(
-                margin: EdgeInsets.zero,
-                child: IconButton(
-                  onPressed: _handleBack,
-                  padding: EdgeInsets.zero,
-                  splashRadius: 25,
-                  icon: const Icon(
-                    Icons.arrow_back_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ),
-            ),
+            child: AppBackButton(),
           ),
           Text(
             'Profile',
             style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
+              color: AppColors.onScreenOf(context),
+              fontSize: 22,
+              fontWeight: FontWeight.w500,
               letterSpacing: 0.2,
             ),
           ),

@@ -1,0 +1,274 @@
+{
+  "info": {
+    "name": "StyleSense AI - Wardrobe",
+    "description": "Postman collection for the StyleSense AI Wardrobe module. Run 01 Login (from the Authentication collection) first, or paste an accessToken directly.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "androidBaseUrl",
+      "value": "http://10.0.2.2:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "wardrobeItemId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Add Wardrobe Item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));",
+              "pm.collectionVariables.set('wardrobeItemId', json.data.item.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "name", "value": "Beige Trench Coat", "type": "text" },
+            { "key": "description", "value": "Long trench coat for autumn", "type": "text" },
+            { "key": "category", "value": "OUTERWEAR", "type": "text" },
+            { "key": "subCategory", "value": "coat", "type": "text" },
+            { "key": "primaryColor", "value": "beige", "type": "text" },
+            { "key": "colors", "value": "beige,tan", "type": "text" },
+            { "key": "brand", "value": "Zara", "type": "text" },
+            { "key": "size", "value": "M", "type": "text" },
+            { "key": "material", "value": "cotton", "type": "text" },
+            { "key": "season", "value": "AUTUMN", "type": "text" },
+            { "key": "occasion", "value": "CASUAL,TRAVEL", "type": "text" },
+            { "key": "tags", "value": "coat,autumn", "type": "text" },
+            { "key": "image", "type": "file", "src": "" }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wardrobe",
+          "host": ["{{baseUrl}}"],
+          "path": ["wardrobe"]
+        },
+        "description": "Attach an image file to the image form field before sending."
+      },
+      "response": []
+    },
+    {
+      "name": "02 List Wardrobe Items",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));",
+              "pm.test('has pagination', () => pm.expect(json.data.pagination).to.have.property('total'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/wardrobe?page=1&limit=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["wardrobe"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "20" }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03 Get Wardrobe Stats",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/wardrobe/stats",
+          "host": ["{{baseUrl}}"],
+          "path": ["wardrobe", "stats"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04 Get Wardrobe Item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/wardrobe/{{wardrobeItemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["wardrobe", "{{wardrobeItemId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05 Update Wardrobe Item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "brand", "value": "Mango", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wardrobe/{{wardrobeItemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["wardrobe", "{{wardrobeItemId}}"]
+        },
+        "description": "Optionally attach a new image file to the image form field to replace the photo; the old file is deleted from disk."
+      },
+      "response": []
+    },
+    {
+      "name": "06 Toggle Favorite",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));",
+              "pm.test('is favorite', () => pm.expect(json.data.item.isFavorite).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"isFavorite\": true\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/wardrobe/{{wardrobeItemId}}/favorite",
+          "host": ["{{baseUrl}}"],
+          "path": ["wardrobe", "{{wardrobeItemId}}", "favorite"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "07 Delete Wardrobe Item",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/wardrobe/{{wardrobeItemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["wardrobe", "{{wardrobeItemId}}"]
+        },
+        "description": "Hard-deletes the item, its image file, and (via DB cascade) any Collection/SavedOutfit links to it."
+      },
+      "response": []
+    }
+  ]
+}

@@ -1,30 +1,33 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../../shared/widgets/user_avatar.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({required this.onProfileTap, super.key});
 
   final VoidCallback onProfileTap;
 
-  static const String profileImage =
-      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=85';
-
   @override
   Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().currentUser;
+    final fullName = user?.name ?? 'Guest';
+    final firstName = fullName.trim().split(RegExp(r'\s+')).first;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onScreen = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
     return Row(
         children: [
           GestureDetector(
             onTap: onProfileTap,
             behavior: HitTestBehavior.opaque,
-            child: ClipOval(
-              child: CachedNetworkImage(
-                imageUrl: profileImage,
-                width: 43,
-                height: 43,
-                fit: BoxFit.cover,
-              ),
+            child: UserAvatar(
+              imageUrl: user?.profilePicture,
+              name: fullName,
+              size: 43,
             ),
           ),
           const SizedBox(width: 9),
@@ -35,7 +38,7 @@ class HomeHeader extends StatelessWidget {
                 Text(
                   'Good Morning,',
                   style: GoogleFonts.poppins(
-                    color: Colors.white,
+                    color: onScreen,
                     fontSize: 13.5,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0,
@@ -43,9 +46,9 @@ class HomeHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 1),
                 Text(
-                  'Georgia',
+                  firstName,
                   style: GoogleFonts.poppins(
-                    color: Colors.white,
+                    color: onScreen,
                     fontSize: 13.5,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0,
@@ -62,17 +65,17 @@ class HomeHeader extends StatelessWidget {
               padding: EdgeInsets.zero,
               splashRadius: 22,
               style: IconButton.styleFrom(
-                backgroundColor: const Color(
-                  0xff5a5254,
-                ).withValues(alpha: 0.75),
+                backgroundColor: isDark
+                    ? const Color(0xff5a5254).withValues(alpha: 0.75)
+                    : Colors.black.withValues(alpha: 0.07),
                 shape: const CircleBorder(),
               ),
               icon: Stack(
                 alignment: Alignment.center,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.notifications_none_rounded,
-                    color: Color(0xffd0d0d0),
+                    color: isDark ? const Color(0xffd0d0d0) : const Color(0xFF3A3A3A),
                     size: 21,
                   ),
                   Positioned(

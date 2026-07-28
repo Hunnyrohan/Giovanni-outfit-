@@ -48,9 +48,12 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch items after the widget binds to build context
+    // Fetch items after the widget binds to build context.
+    // Default to 'All': real backend items use enum categories (TOP, BOTTOM,
+    // DRESS...) that never match the display-only chip labels, so any other
+    // default filters every real item out and the wardrobe looks empty.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<WardrobeProvider>().setCategory('T-shirts');
+      context.read<WardrobeProvider>().setCategory('All');
       context.read<WardrobeProvider>().fetchWardrobeItems();
     });
   }
@@ -59,23 +62,31 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
   Widget build(BuildContext context) {
     final wardrobeProvider = context.watch<WardrobeProvider>();
     final items = wardrobeProvider.filteredWardrobeItems;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: isDark ? Colors.black : const Color(0xffF3F1EF),
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xff242020),
-              Color(0xff090909),
-              Color(0xff050505),
-              Color(0xff2b2030),
-            ],
-            stops: [0.0, 0.34, 0.72, 1.0],
+            colors: isDark
+                ? const [
+                    Color(0xff242020),
+                    Color(0xff090909),
+                    Color(0xff050505),
+                    Color(0xff2b2030),
+                  ]
+                : const [
+                    Color(0xffEDE6DB),
+                    Color(0xffF4F2F0),
+                    Color(0xffF3F1EF),
+                    Color(0xffE8DFE9),
+                  ],
+            stops: const [0.0, 0.34, 0.72, 1.0],
           ),
         ),
         child: SafeArea(
@@ -107,7 +118,7 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
                             style: GoogleFonts.outfit(
                               fontSize: 26,
                               fontWeight: FontWeight.w500,
-                              color: Colors.white,
+                              color: isDark ? Colors.white : const Color(0xFF1E1E1E),
                               letterSpacing: 0,
                             ),
                           ),
@@ -160,11 +171,11 @@ class _MyWardrobeScreenState extends State<MyWardrobeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 29.0),
                     sliver: SliverToBoxAdapter(
                       child: wardrobeProvider.isLoading
-                          ? const Center(
+                          ? Center(
                               child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 80.0),
+                                padding: const EdgeInsets.symmetric(vertical: 80.0),
                                 child: CircularProgressIndicator(
-                                  color: Colors.white24,
+                                  color: isDark ? Colors.white24 : Colors.black26,
                                 ),
                               ),
                             )

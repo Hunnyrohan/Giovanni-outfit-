@@ -11,7 +11,7 @@ class CategoryChipList extends StatefulWidget {
   static const List<String> _categories = [
     'Office',
     'Casual Outings',
-    'Formal Party',
+    'Formal',
     'College',
     'Date Night',
   ];
@@ -58,6 +58,18 @@ class _CategoryChipListState extends State<CategoryChipList> {
         itemBuilder: (context, index) {
           final label = CategoryChipList._categories[index];
           final selected = label == widget.selectedCategory;
+          final isDark = Theme.of(context).brightness == Brightness.dark;
+
+          // Selected chip inverts against the theme: white-on-dark screens,
+          // dark-on-light screens - unselected stays a muted grey pill.
+          final chipColor = selected
+              ? (isDark ? Colors.white : const Color(0xFF1E1E1E))
+              : (isDark
+                  ? const Color(0xff686868).withValues(alpha: 0.9)
+                  : Colors.black.withValues(alpha: 0.07));
+          final labelColor = selected
+              ? (isDark ? Colors.black : Colors.white)
+              : (isDark ? const Color(0xffe2e2e2) : const Color(0xFF4A4A4A));
 
           return GestureDetector(
             key: _categoryKeys[index],
@@ -69,9 +81,7 @@ class _CategoryChipListState extends State<CategoryChipList> {
                 right: selected ? 8 : 9,
               ),
               decoration: BoxDecoration(
-                color: selected
-                    ? Colors.white
-                    : const Color(0xff686868).withValues(alpha: 0.9),
+                color: chipColor,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
@@ -80,7 +90,7 @@ class _CategoryChipListState extends State<CategoryChipList> {
                   Text(
                     label,
                     style: GoogleFonts.poppins(
-                      color: selected ? Colors.black : const Color(0xffe2e2e2),
+                      color: labelColor,
                       fontSize: 11.2,
                       fontWeight: FontWeight.w400,
                     ),
@@ -90,7 +100,7 @@ class _CategoryChipListState extends State<CategoryChipList> {
                     selected
                         ? Icons.keyboard_arrow_down_rounded
                         : Icons.chevron_right_rounded,
-                    color: selected ? Colors.black : const Color(0xffd9d9d9),
+                    color: labelColor,
                     size: 16,
                   ),
                 ],

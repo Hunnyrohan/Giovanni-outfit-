@@ -1,3 +1,4 @@
+import '../../../../core/constants/api_constants.dart';
 import '../../domain/entities/wardrobe_item_entity.dart';
 
 class WardrobeItemModel extends WardrobeItemEntity {
@@ -48,6 +49,32 @@ class WardrobeItemModel extends WardrobeItemEntity {
       'isSavedOutfit': isSavedOutfit,
       'isMarketplaceItem': isMarketplaceItem,
     };
+  }
+
+  /// Maps the real backend's wardrobe item shape (`id, name, description,
+  /// imageUrl, category, subCategory, primaryColor, colors, brand, size,
+  /// material, season, occasion, tags, isFavorite, isArchived, ...`) onto
+  /// this UI-facing entity. The backend has no price/rating/subtitle concept
+  /// (those belong to a marketplace-style mock, not a real wardrobe item),
+  /// so they're given sensible defaults rather than invented.
+  factory WardrobeItemModel.fromBackendJson(Map<String, dynamic> json) {
+    final size = json['size'] as String?;
+    return WardrobeItemModel(
+      id: json['id'] as String,
+      title: json['name'] as String,
+      subtitle: (json['brand'] as String?) ?? (json['category'] as String? ?? ''),
+      price: 0.0,
+      rating: 0.0,
+      imageUrl: ApiConstants.resolveMediaUrl(json['imageUrl'] as String?) ?? '',
+      // The UI's category chips use display names ('T-shirts', 'Jacket'...)
+      // that live in the backend's free-form subCategory field; the enum
+      // category (TOP, OUTERWEAR...) is only the fallback so items without
+      // a subCategory still land somewhere visible.
+      category: (json['subCategory'] as String?) ?? (json['category'] as String? ?? 'Other'),
+      colors: List<String>.from(json['colors'] as List? ?? const []),
+      sizes: size == null ? const [] : [size],
+      isFavorite: json['isFavorite'] as bool? ?? false,
+    );
   }
 
   factory WardrobeItemModel.fromEntity(WardrobeItemEntity entity) {

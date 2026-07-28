@@ -18,12 +18,14 @@ class ProfileCollectionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final headerStyle = _headerStyleOf(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            Text('Collections', style: _headerStyle),
+            Text('Collections', style: headerStyle),
             const SizedBox(width: 5),
             Text(
               '($collectionCount)',
@@ -33,7 +35,7 @@ class ProfileCollectionSection extends StatelessWidget {
             Text(
               '$likesCount likes',
               maxLines: 1,
-              style: _headerStyle.copyWith(fontSize: 15),
+              style: headerStyle.copyWith(fontSize: 15),
             ),
           ],
         ),
@@ -54,8 +56,10 @@ class ProfileCollectionSection extends StatelessWidget {
     );
   }
 
-  TextStyle get _headerStyle => GoogleFonts.outfit(
-    color: Colors.white,
+  TextStyle _headerStyleOf(BuildContext context) => GoogleFonts.outfit(
+    color: Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : const Color(0xFF1E1E1E),
     fontSize: 17,
     fontWeight: FontWeight.w400,
   );

@@ -1,42 +1,57 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '../../features/auth/presentation/providers/auth_provider.dart';
 import 'app_drawer_item.dart';
+import 'user_avatar.dart';
 
 class AppCustomDrawer extends StatelessWidget {
   const AppCustomDrawer({super.key});
-
-  static const String _profileImage =
-      'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=300&q=85';
 
   void _openRoute(BuildContext context, String route) {
     Navigator.of(context).pop();
     context.go(route);
   }
 
+  void _pushRoute(BuildContext context, String route) {
+    Navigator.of(context).pop();
+    context.push(route);
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.sizeOf(context);
     final drawerWidth = (screenSize.width * 0.77).clamp(270.0, 287.0);
+    final user = context.watch<AuthProvider>().currentUser;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Per the design reference, the drawer content is white-on-dark in BOTH
+    // themes; only the panel tone changes - near-black in dark mode, a mid
+    // grey in light mode.
     return SizedBox(
       width: drawerWidth,
       height: double.infinity,
       child: Material(
-        color: const Color(0xff111111),
+        color: isDark ? const Color(0xff111111) : const Color(0xff6f6f6f),
         child: DecoratedBox(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Color(0xff151515),
-                Color(0xff101010),
-                Color(0xff121112),
-              ],
-              stops: [0, 0.58, 1],
+              colors: isDark
+                  ? const [
+                      Color(0xff151515),
+                      Color(0xff101010),
+                      Color(0xff121112),
+                    ]
+                  : const [
+                      Color(0xff757575),
+                      Color(0xff6e6e6e),
+                      Color(0xff727072),
+                    ],
+              stops: const [0, 0.58, 1],
             ),
           ),
           child: Column(
@@ -45,13 +60,10 @@ class AppCustomDrawer extends StatelessWidget {
               padding: const EdgeInsets.only(top: 92, left: 15, right: 15),
               child: Row(
                 children: [
-                  ClipOval(
-                    child: CachedNetworkImage(
-                      imageUrl: _profileImage,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                    ),
+                  UserAvatar(
+                    imageUrl: user?.profilePicture,
+                    name: user?.name ?? 'Guest',
+                    size: 60,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -59,7 +71,7 @@ class AppCustomDrawer extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Georgia Smith',
+                          user?.name ?? 'Guest',
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontSize: 15,
@@ -67,9 +79,9 @@ class AppCustomDrawer extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'geosmith009@gmail.com',
+                          user?.email ?? '',
                           style: GoogleFonts.poppins(
-                            color: Colors.white.withValues(alpha: 0.5),
+                            color: Colors.white.withValues(alpha: 0.55),
                             fontSize: 9.5,
                             fontWeight: FontWeight.w400,
                           ),
@@ -94,7 +106,7 @@ class AppCustomDrawer extends StatelessWidget {
             AppDrawerItem(
               icon: Icons.hub_outlined,
               label: 'AI Stylist',
-              onTap: () => _openRoute(context, '/home'),
+              onTap: () => _openRoute(context, '/ai-stylist'),
             ),
             AppDrawerItem(
               icon: Icons.history_rounded,
@@ -104,7 +116,7 @@ class AppCustomDrawer extends StatelessWidget {
             AppDrawerItem(
               icon: Icons.account_circle_outlined,
               label: 'Profile & setting',
-              onTap: () => _openRoute(context, '/profile'),
+              onTap: () => _pushRoute(context, '/profile-settings'),
             ),
             const Spacer(),
             Padding(

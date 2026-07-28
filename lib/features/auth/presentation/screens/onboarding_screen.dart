@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../../shared/widgets/app_ambient_background.dart';
 import '../widgets/onboarding_illustrations.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -65,20 +66,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onScreen = isDark ? Colors.white : const Color(0xFF1E1E1E);
+    final onScreenMuted = isDark ? Colors.grey.shade400 : const Color(0xFF6E6A70);
+
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            colors: [
-              Color(0xff2d231b), // Soft warm gold/brown center glow
-              Color(0xff120f17), // Deep purple-black ambient transition
-              Color(0xff09070b), // Deep dark edge
-            ],
-            stops: [0.0, 0.7, 1.0],
-            center: Alignment(-0.5, -0.2), // Matches the left-shifted glow in the screenshot
-            radius: 1.5,
-          ),
-        ),
+      body: AppAmbientBackground(
         child: SafeArea(
           child: Column(
             children: [
@@ -128,7 +121,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             style: GoogleFonts.outfit(
                               fontSize: 26,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                              color: onScreen,
                               letterSpacing: 0.5,
                             ),
                           ),
@@ -139,7 +132,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             textAlign: TextAlign.center,
                             style: GoogleFonts.outfit(
                               fontSize: 14,
-                              color: Colors.grey.shade400,
+                              color: onScreenMuted,
                               height: 1.5,
                               letterSpacing: 0.2,
                             ),
@@ -162,7 +155,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     width: isActive ? 18 : 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: isActive ? Colors.white : Colors.white24,
+                      color: isActive ? onScreen : onScreen.withValues(alpha: 0.24),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   );
@@ -185,16 +178,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           height: 46,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.08),
+                            color: onScreen.withValues(alpha: 0.08),
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.1),
+                              color: onScreen.withValues(alpha: 0.1),
                               width: 1.0,
                             ),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.arrow_back,
                             size: 18,
-                            color: Colors.white70,
+                            color: onScreen.withValues(alpha: 0.7),
                           ),
                         ),
                       )
@@ -209,12 +202,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         decoration: BoxDecoration(
                           color: _currentIndex == _pages.length - 1
                               ? const Color(0xffef586c)
-                              : Colors.white.withValues(alpha: 0.08),
+                              : onScreen.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(30),
                           border: Border.all(
                             color: _currentIndex == _pages.length - 1
                                 ? const Color(0xffef586c)
-                                : Colors.white.withValues(alpha: 0.1),
+                                : onScreen.withValues(alpha: 0.1),
                             width: 1.0,
                           ),
                         ),
@@ -225,8 +218,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               _currentIndex == _pages.length - 1
                                   ? 'Get Started'
                                   : 'Next',
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: _currentIndex == _pages.length - 1
+                                    ? Colors.white
+                                    : onScreen,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: 0.2,
@@ -238,14 +233,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.white70,
+                                  color: _currentIndex == _pages.length - 1
+                                      ? Colors.white70
+                                      : onScreen.withValues(alpha: 0.7),
                                   width: 1.2,
                                 ),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.arrow_forward,
                                 size: 12,
-                                color: Colors.white,
+                                color: _currentIndex == _pages.length - 1
+                                    ? Colors.white
+                                    : onScreen,
                               ),
                             ),
                           ],

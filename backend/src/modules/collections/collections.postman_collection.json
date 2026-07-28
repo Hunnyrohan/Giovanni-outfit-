@@ -1,0 +1,278 @@
+{
+  "info": {
+    "name": "StyleSense AI - Collections",
+    "description": "Postman collection for the StyleSense AI Collections module. Run 01 Login (Authentication collection) and add at least one wardrobe item (Wardrobe collection) first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "androidBaseUrl",
+      "value": "http://10.0.2.2:3000/api",
+      "type": "string"
+    },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "collectionId", "value": "", "type": "string" },
+    { "key": "wardrobeItemId", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "01 Create Collection",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));",
+              "pm.collectionVariables.set('collectionId', json.data.collection.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "name", "value": "Summer Vibes", "type": "text" },
+            { "key": "description", "value": "Beach and sunshine outfits", "type": "text" },
+            { "key": "coverImage", "type": "file", "src": "" }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/collections",
+          "host": ["{{baseUrl}}"],
+          "path": ["collections"]
+        },
+        "description": "coverImage is optional; leave the file field empty to create without a cover."
+      },
+      "response": []
+    },
+    {
+      "name": "02 List Collections",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/collections?page=1&limit=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["collections"],
+          "query": [
+            { "key": "page", "value": "1" },
+            { "key": "limit", "value": "20" }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "03 Add Wardrobe Item to Collection",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 201', () => pm.response.to.have.status(201));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"wardrobeItemId\": \"{{wardrobeItemId}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/collections/{{collectionId}}/items",
+          "host": ["{{baseUrl}}"],
+          "path": ["collections", "{{collectionId}}", "items"]
+        },
+        "description": "Set the wardrobeItemId collection variable to a real id from the Wardrobe collection's Add Wardrobe Item response first."
+      },
+      "response": []
+    },
+    {
+      "name": "04 Get Collection",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/collections/{{collectionId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["collections", "{{collectionId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05 Reorder Collection Items",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"orderedWardrobeItemIds\": [\"{{wardrobeItemId}}\"]\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/collections/{{collectionId}}/items/reorder",
+          "host": ["{{baseUrl}}"],
+          "path": ["collections", "{{collectionId}}", "items", "reorder"]
+        },
+        "description": "The array must exactly match the set of wardrobe item ids currently in the collection, in the desired new order."
+      },
+      "response": []
+    },
+    {
+      "name": "06 Update Collection",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "description", "value": "Updated description", "type": "text" }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/collections/{{collectionId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["collections", "{{collectionId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "07 Remove Wardrobe Item from Collection",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/collections/{{collectionId}}/items/{{wardrobeItemId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["collections", "{{collectionId}}", "items", "{{wardrobeItemId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "08 Delete Collection",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/collections/{{collectionId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["collections", "{{collectionId}}"]
+        },
+        "description": "Deletes the collection and its item associations only. The underlying wardrobe items are not deleted."
+      },
+      "response": []
+    }
+  ]
+}

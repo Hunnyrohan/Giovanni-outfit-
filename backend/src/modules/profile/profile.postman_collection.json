@@ -1,0 +1,241 @@
+{
+  "info": {
+    "name": "StyleSense AI - Profile",
+    "description": "Postman collection for the StyleSense AI User Profile module. Run 01 Login (from the Authentication collection) first, or paste an accessToken directly.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "androidBaseUrl",
+      "value": "http://10.0.2.2:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "currentPassword",
+      "value": "Password123",
+      "type": "string"
+    },
+    {
+      "key": "newPassword",
+      "value": "NewPassword123",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Get Profile",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/profile",
+          "host": ["{{baseUrl}}"],
+          "path": ["profile"]
+        },
+        "description": "Protected route. Returns the authenticated user's profile."
+      },
+      "response": []
+    },
+    {
+      "name": "02 Update Profile",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));",
+              "pm.test('bio updated', () => pm.expect(json.data.user.bio).to.eql('Fashion enthusiast and minimalist wardrobe lover.'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Giovanni Rossi\",\n  \"bio\": \"Fashion enthusiast and minimalist wardrobe lover.\",\n  \"gender\": \"MALE\",\n  \"phoneNumber\": \"+1 555-123-4567\",\n  \"dateOfBirth\": \"1995-05-20\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/profile",
+          "host": ["{{baseUrl}}"],
+          "path": ["profile"]
+        },
+        "description": "Updates one or more profile fields. All fields are optional but at least one is required."
+      },
+      "response": []
+    },
+    {
+      "name": "03 Upload Profile Picture",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));",
+              "pm.test('profileImage set', () => pm.expect(json.data.user.profileImage).to.be.a('string').and.not.empty);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "profileImage",
+              "type": "file",
+              "src": ""
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/profile/picture",
+          "host": ["{{baseUrl}}"],
+          "path": ["profile", "picture"]
+        },
+        "description": "Attach an image file to the profileImage form field before sending."
+      },
+      "response": []
+    },
+    {
+      "name": "04 Remove Profile Picture",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));",
+              "pm.test('profileImage cleared', () => pm.expect(json.data.user.profileImage).to.eql(null));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Accept", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+        "url": {
+          "raw": "{{baseUrl}}/profile/picture",
+          "host": ["{{baseUrl}}"],
+          "path": ["profile", "picture"]
+        },
+        "description": "Deletes the stored profile picture file and clears profileImage on the user record."
+      },
+      "response": []
+    },
+    {
+      "name": "05 Change Password",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"currentPassword\": \"{{currentPassword}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/profile/password",
+          "host": ["{{baseUrl}}"],
+          "path": ["profile", "password"]
+        },
+        "description": "Verifies currentPassword, hashes newPassword, and invalidates the existing refresh token so other sessions must log in again."
+      },
+      "response": []
+    },
+    {
+      "name": "06 Delete Account",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "const json = pm.response.json();",
+              "pm.test('success response', () => pm.expect(json.success).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"password\": \"{{newPassword}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/profile",
+          "host": ["{{baseUrl}}"],
+          "path": ["profile"]
+        },
+        "description": "Requires password confirmation. Permanently deletes the user and all cascade-related records (wardrobe items, collections, chats, etc.)."
+      },
+      "response": []
+    }
+  ]
+}

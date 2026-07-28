@@ -22,6 +22,15 @@ class AuthFailure extends Failure {
   const AuthFailure(super.message);
 }
 
+/// Not an error: the password check passed but the account has two-factor
+/// authentication enabled, so login must continue with a TOTP code plus
+/// this short-lived token (see /auth/2fa/verify).
+class TwoFactorRequiredFailure extends Failure {
+  final String twoFactorToken;
+  const TwoFactorRequiredFailure(this.twoFactorToken)
+    : super('Two-factor authentication required');
+}
+
 // Simple Either implementation for Clean Architecture error handling
 abstract class Either<L, R> {
   const Either();

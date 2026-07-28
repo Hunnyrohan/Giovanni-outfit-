@@ -7,15 +7,19 @@ class FloatingHomeNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: 186,
       height: 45,
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.94),
+        color: isDark
+            ? Colors.black.withValues(alpha: 0.94)
+            : Colors.white.withValues(alpha: 0.96),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.68),
+            color: Colors.black.withValues(alpha: isDark ? 0.68 : 0.18),
             blurRadius: 18,
             offset: const Offset(0, 7),
           ),
@@ -37,13 +41,13 @@ class FloatingHomeNav extends StatelessWidget {
               child: Container(
                 width: 31,
                 height: 31,
-                decoration: const BoxDecoration(
-                  color: Color(0xff505050),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xff505050) : const Color(0xffE4E0DC),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.home_outlined,
-                  color: Colors.white,
+                  color: isDark ? Colors.white : const Color(0xFF1E1E1E),
                   size: 19,
                 ),
               ),
@@ -87,9 +91,9 @@ class FloatingHomeNav extends StatelessWidget {
             top: 0,
             child: _NavButton(
               onTap: () => AppRouter.router.go('/profile'),
-              child: const Icon(
+              child: Icon(
                 Icons.person_outline_rounded,
-                color: Colors.white,
+                color: isDark ? Colors.white : const Color(0xFF1E1E1E),
                 size: 19,
               ),
             ),

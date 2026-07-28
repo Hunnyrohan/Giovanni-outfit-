@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/utils/currency.dart';
+
 import '../../domain/entities/wardrobe_item_entity.dart';
 import '../providers/wardrobe_provider.dart';
 import '../widgets/size_option_chip.dart';
@@ -36,7 +38,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     super.initState();
     // Initialize interactive size options
     final itemSizes = widget.item?.sizes ?? ['S', 'M', 'L', 'XL'];
-    _selectedSize = itemSizes.contains('M') ? 'M' : itemSizes.first;
+    _selectedSize = itemSizes.contains('M')
+        ? 'M'
+        : (itemSizes.isEmpty ? '' : itemSizes.first);
     _selectedColorIndex = 0;
     _activeCarouselIndex = 1; // Highlighting third dot matching reference image
   }
@@ -48,7 +52,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       id: 'mock_detail',
       title: 'Two tone long-sleeve shirt',
       subtitle: 'Colorblocked heavyweight knit',
-      price: 21.00,
+      price: 2100.00,
       rating: 4.8,
       imageUrl: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=800&auto=format&fit=crop&q=80',
       category: 'T-shirts',
@@ -64,19 +68,28 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             || wardrobeProvider.marketplaceItems.any((e) => e.id == item.id && e.isFavorite)
         : item.isFavorite;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onScreen = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
     return Scaffold(
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: RadialGradient(
-            colors: [
-              Color(0xff2d231b), // Soft warm ambient center glow
-              Color(0xff121212),
-              Color(0xff050505),
-            ],
-            stops: [0.0, 0.7, 1.0],
-            center: Alignment(-0.5, -0.2),
+            colors: isDark
+                ? const [
+                    Color(0xff2d231b), // Soft warm ambient center glow
+                    Color(0xff121212),
+                    Color(0xff050505),
+                  ]
+                : const [
+                    Color(0xffEDE4D4),
+                    Color(0xffF3F1EF),
+                    Color(0xffEAE4EA),
+                  ],
+            stops: const [0.0, 0.7, 1.0],
+            center: const Alignment(-0.5, -0.2),
             radius: 1.5,
           ),
         ),
@@ -99,7 +112,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       style: GoogleFonts.outfit(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: onScreen,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -138,12 +151,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(28),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.05),
+                            color: onScreen.withValues(alpha: 0.05),
                             width: 1.0,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
+                              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.12),
                               blurRadius: 20,
                               spreadRadius: 2,
                             ),
@@ -157,9 +170,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             loadingBuilder: (context, child, loadingProgress) {
                               if (loadingProgress == null) return child;
                               return Container(
-                                color: const Color(0xff1c1c1e),
-                                child: const Center(
-                                  child: CircularProgressIndicator(color: Colors.white24),
+                                color: isDark ? const Color(0xff1c1c1e) : const Color(0xffE7E3DF),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: isDark ? Colors.white24 : Colors.black26,
+                                  ),
                                 ),
                               );
                             },
@@ -182,7 +197,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                               height: 6.0,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(3),
-                                color: isActive ? Colors.white : Colors.white24,
+                                color: isActive ? onScreen : onScreen.withValues(alpha: 0.24),
                               ),
                             ),
                           );
@@ -196,17 +211,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         style: GoogleFonts.outfit(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: onScreen,
                           letterSpacing: 0.2,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '\$ ${item.price.toInt()}',
+                        Currency.format(item.price),
                         style: GoogleFonts.outfit(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xffd6ff00), // Lime green price accent
+                          color: onScreen,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -216,7 +231,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         text: TextSpan(
                           style: GoogleFonts.outfit(
                             fontSize: 12,
-                            color: const Color(0xffbdbdbd),
+                            color: isDark ? const Color(0xffbdbdbd) : const Color(0xFF6E6A70),
                             height: 1.5,
                           ),
                           children: [
@@ -301,16 +316,16 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                         height: 52,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.08),
+                          color: onScreen.withValues(alpha: 0.08),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.1),
+                            color: onScreen.withValues(alpha: 0.1),
                             width: 1.0,
                           ),
                         ),
                         child: Center(
                           child: Icon(
                             isFavorite ? Icons.favorite : Icons.favorite_border,
-                            color: isFavorite ? const Color(0xffef586c) : Colors.white,
+                            color: isFavorite ? const Color(0xffef586c) : onScreen,
                             size: 22,
                           ),
                         ),
@@ -337,8 +352,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black,
+                            backgroundColor: onScreen,
+                            foregroundColor: isDark ? Colors.black : Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
@@ -348,7 +363,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             style: GoogleFonts.outfit(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: isDark ? Colors.black : Colors.white,
                             ),
                           ),
                         ),

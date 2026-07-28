@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/errors/failure.dart';
 import '../../domain/entities/user_entity.dart';
@@ -15,17 +17,92 @@ class AuthRepositoryImpl implements AuthRepository {
     required this.localDataSource,
   });
 
+  /// Persists tokens + user from a successful auth payload and returns the
+  /// signed-in user. Shared by login, 2FA verification, and registration.
+  Future<UserEntity> _persistAuthPayload(Map<String, dynamic> authData) async {
+    final String token = authData['token'] as String;
+    final String? refreshToken = authData['refreshToken'] as String?;
+    final Map<String, dynamic> userJson =
+        authData['user'] as Map<String, dynamic>;
+    final userModel = UserModel.fromJson(userJson);
+
+    await localDataSource.saveToken(token);
+    if (refreshToken != null) {
+      await localDataSource.saveRefreshToken(refreshToken);
+    }
+    await localDataSource.cacheUser(userModel);
+
+    return userModel.toEntity();
+  }
+
   @override
-  Future<Either<Failure, UserEntity>> login(String email, String password) async {
+  Future<Either<Failure, UserEntity>> login(
+    String email,
+    String password,
+  ) async {
     try {
       final loginData = await remoteDataSource.login(email, password);
-      
+
+      // Password accepted but the account requires a TOTP code: surface the
+      // short-lived continuation token instead of a signed-in user.
+      if (loginData['requiresTwoFactor'] == true) {
+        return Left(
+          TwoFactorRequiredFailure(loginData['twoFactorToken'] as String),
+        );
+      }
+
+      return Right(await _persistAuthPayload(loginData));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> verifyTwoFactor(
+    String twoFactorToken,
+    String code,
+  ) async {
+    try {
+      final authData =
+          await remoteDataSource.verifyTwoFactor(twoFactorToken, code);
+
+      return Right(await _persistAuthPayload(authData));
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } on CacheException catch (e) {
+      return Left(CacheFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> googleLogin() async {
+    try {
+      final loginData = await remoteDataSource.googleLogin();
+
       final String token = loginData['token'] as String;
-      final Map<String, dynamic> userJson = loginData['user'] as Map<String, dynamic>;
+      final String? refreshToken = loginData['refreshToken'] as String?;
+      final Map<String, dynamic> userJson =
+          loginData['user'] as Map<String, dynamic>;
       final userModel = UserModel.fromJson(userJson);
 
-      // Save token and cache user locally
       await localDataSource.saveToken(token);
+      if (refreshToken != null) {
+        await localDataSource.saveRefreshToken(refreshToken);
+      }
       await localDataSource.cacheUser(userModel);
 
       return Right(userModel.toEntity());
@@ -43,16 +120,29 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserEntity>> register(String name, String email, String password) async {
+  Future<Either<Failure, UserEntity>> register(
+    String name,
+    String email,
+    String password,
+  ) async {
     try {
-      final registerData = await remoteDataSource.register(name, email, password);
+      final registerData = await remoteDataSource.register(
+        name,
+        email,
+        password,
+      );
 
       final String token = registerData['token'] as String;
-      final Map<String, dynamic> userJson = registerData['user'] as Map<String, dynamic>;
+      final String? refreshToken = registerData['refreshToken'] as String?;
+      final Map<String, dynamic> userJson =
+          registerData['user'] as Map<String, dynamic>;
       final userModel = UserModel.fromJson(userJson);
 
       // Save token and cache user locally
       await localDataSource.saveToken(token);
+      if (refreshToken != null) {
+        await localDataSource.saveRefreshToken(refreshToken);
+      }
       await localDataSource.cacheUser(userModel);
 
       return Right(userModel.toEntity());
@@ -105,8 +195,37 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, UserEntity>> updateProfilePicture(
+    File imageFile,
+  ) async {
+    try {
+      final userJson = await remoteDataSource.uploadProfilePicture(imageFile);
+      final userModel = UserModel.fromJson(userJson);
+      await localDataSource.cacheUser(userModel);
+      return Right(userModel.toEntity());
+    } on AuthException catch (e) {
+      return Left(AuthFailure(e.message));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, void>> logout() async {
     try {
+      // Best-effort: invalidate the refresh token server-side. Even if this
+      // fails (offline, expired token, etc.) the local session must still
+      // be cleared below so the user is signed out on-device.
+      try {
+        await remoteDataSource.logout();
+      } catch (_) {
+        // Ignored: local sign-out must proceed regardless of network state.
+      }
+
       await localDataSource.clearCache();
       return const Right(null);
     } on CacheException catch (e) {

@@ -6,6 +6,8 @@ class ProfileBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SizedBox(
       width: 238,
       height: 66,
@@ -19,11 +21,13 @@ class ProfileBottomNav extends StatelessWidget {
               width: 238,
               height: 57,
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.91),
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.91)
+                    : Colors.white.withValues(alpha: 0.96),
                 borderRadius: BorderRadius.circular(31),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.38),
+                    color: Colors.black.withValues(alpha: isDark ? 0.38 : 0.16),
                     blurRadius: 12,
                     offset: const Offset(0, 5),
                   ),
@@ -39,9 +43,9 @@ class ProfileBottomNav extends StatelessWidget {
                       onPressed: () => context.go('/home'),
                       padding: EdgeInsets.zero,
                       splashRadius: 27,
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.home_outlined,
-                        color: Colors.white,
+                        color: isDark ? Colors.white : const Color(0xFF1E1E1E),
                         size: 29,
                       ),
                     ),
@@ -57,13 +61,15 @@ class ProfileBottomNav extends StatelessWidget {
                       icon: Container(
                         width: 40,
                         height: 40,
-                        decoration: const BoxDecoration(
-                          color: Color(0xff505050),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xff505050)
+                              : const Color(0xffE4E0DC),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.account_circle_outlined,
-                          color: Colors.white,
+                          color: isDark ? Colors.white : const Color(0xFF1E1E1E),
                           size: 32,
                         ),
                       ),

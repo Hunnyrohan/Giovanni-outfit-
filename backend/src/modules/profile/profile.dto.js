@@ -1,0 +1,17 @@
+export const toProfileDto = (user) => ({
+  id: user.id,
+  fullName: user.fullName,
+  name: user.fullName,
+  email: user.email,
+  gender: user.gender,
+  profileImage: user.profileImage,
+  profilePicture: user.profileImage,
+  bio: user.bio,
+  phoneNumber: user.phoneNumber,
+  dateOfBirth: user.dateOfBirth,
+  role: user.role,
+  isEmailVerified: user.isEmailVerified,
+  twoFactorEnabled: user.twoFactorEnabled ?? false,
+  createdAt: user.createdAt,
+  updatedAt: user.updatedAt,
+});

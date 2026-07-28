@@ -42,6 +42,60 @@ class AppColors {
     end: Alignment.bottomCenter,
   );
 
+  /// The single dark background gradient used behind every app screen.
+  static const Gradient screenGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF3A3326),
+      Color(0xFF131313),
+      Color(0xFF27152B),
+    ],
+    stops: [0.0, 0.5, 1.0],
+  );
+
+  /// Light-mode counterpart of [screenGradient]: the soft warm off-white
+  /// with muted olive/lilac tints used by the splash & onboarding screens.
+  static const Gradient screenGradientLight = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFFE9E2D8),
+      Color(0xFFF3F1EF),
+      Color(0xFFE3DAE6),
+    ],
+    stops: [0.0, 0.5, 1.0],
+  );
+
+  /// Brightness-aware screen gradient - dark theme keeps the existing look,
+  /// light theme matches the splash/onboarding aesthetic.
+  static Gradient screenGradientOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? screenGradient
+          : screenGradientLight;
+
+  /// Primary/secondary foreground colors on top of the screen gradient.
+  static Color onScreenOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? Colors.white
+          : const Color(0xFF1E1E1E);
+
+  static Color onScreenMutedOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF9E9E9E)
+          : const Color(0xFF6E6A70);
+
+  /// Fill color for cards/inputs sitting on the screen gradient.
+  static Color surfaceOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? Colors.white.withValues(alpha: 0.06)
+          : Colors.black.withValues(alpha: 0.05);
+
+  static Color surfaceBorderOf(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark
+          ? Colors.white.withValues(alpha: 0.12)
+          : Colors.black.withValues(alpha: 0.10);
+
   // Shadows
   static List<BoxShadow> softShadow = [
     BoxShadow(

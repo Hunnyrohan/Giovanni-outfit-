@@ -11,6 +11,10 @@ class LastOutfitList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onScreen = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : const Color(0xFF1E1E1E);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -19,13 +23,13 @@ class LastOutfitList extends StatelessWidget {
             Text(
               'Last outfits',
               style: GoogleFonts.outfit(
-                color: Colors.white,
+                color: onScreen,
                 fontSize: 17,
                 fontWeight: FontWeight.w400,
               ),
             ),
             const SizedBox(width: 8),
-            const Icon(Icons.refresh_rounded, color: Colors.white, size: 21),
+            Icon(Icons.refresh_rounded, color: onScreen, size: 21),
           ],
         ),
         const SizedBox(height: 10),

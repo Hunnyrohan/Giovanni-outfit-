@@ -1,0 +1,35 @@
+# Web framework
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+
+# Configuration & validation
+pydantic==2.10.4
+pydantic-settings==2.7.1
+
+# CatVTON pipeline - pinned to match the versions the upstream project
+# (Zheng-Chong/CatVTON) actually tested against. numpy MUST stay <2 to match
+# torch==2.1.2 (torch 2.1.x predates full NumPy 2.x support).
+torch==2.1.2
+torchvision==0.16.2
+diffusers==0.29.2
+transformers==4.27.3
+accelerate==0.31.0
+huggingface_hub==0.23.4
+opencv-python==4.10.0.84
+Pillow==10.3.0
+numpy==1.26.4
+tqdm==4.66.4
+packaging==24.1
+
+# Mask generation (replaces CatVTON's official detectron2-based AutoMasker,
+# which has no official Windows build - see catvton_lib/VENDORED_NOTICE.md)
+mediapipe==0.10.18
+
+# HTTP client (mediapipe model download, future outbound calls)
+requests==2.32.3
+
+# Testing
+pytest==8.3.4
+pytest-asyncio==0.25.0
+httpx==0.28.1

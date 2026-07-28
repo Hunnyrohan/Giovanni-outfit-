@@ -6,12 +6,17 @@ class AiSearchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       height: 40,
       padding: const EdgeInsets.only(left: 14, right: 13),
       decoration: BoxDecoration(
-        color: const Color(0xff858585).withValues(alpha: 0.88),
+        color: isDark
+            ? const Color(0xff858585).withValues(alpha: 0.88)
+            : Colors.white.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(23),
+        border: isDark ? null : Border.all(color: Colors.black.withValues(alpha: 0.08)),
       ),
       child: Row(
         children: [
@@ -20,7 +25,9 @@ class AiSearchBar extends StatelessWidget {
           Container(
             width: 1,
             height: 24,
-            color: Colors.white.withValues(alpha: 0.55),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.55)
+                : Colors.black.withValues(alpha: 0.25),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -29,7 +36,7 @@ class AiSearchBar extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.poppins(
-                color: const Color(0xfff1f1f1),
+                color: isDark ? const Color(0xfff1f1f1) : const Color(0xFF4A4A4A),
                 fontSize: 10.6,
                 fontWeight: FontWeight.w400,
                 letterSpacing: 0,

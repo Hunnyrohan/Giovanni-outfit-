@@ -16,22 +16,32 @@ class RecommendationScreen extends StatelessWidget {
     final previewWidth = 248.0 * scale;
     final previewHeight = 331.0 * scale;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onScreen = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: isDark ? Colors.black : const Color(0xffF3F1EF),
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xff151515),
-              Color(0xff090909),
-              Color(0xff151318),
-              Color(0xff352333),
-            ],
-            stops: [0, 0.45, 0.78, 1],
+            colors: isDark
+                ? const [
+                    Color(0xff151515),
+                    Color(0xff090909),
+                    Color(0xff151318),
+                    Color(0xff352333),
+                  ]
+                : const [
+                    Color(0xffEDE6DB),
+                    Color(0xffF4F2F0),
+                    Color(0xffF3F1EF),
+                    Color(0xffE8DFE9),
+                  ],
+            stops: const [0, 0.45, 0.78, 1],
           ),
         ),
         child: SafeArea(
@@ -88,7 +98,7 @@ class RecommendationScreen extends StatelessWidget {
                           Text(
                             'Recommendation',
                             style: GoogleFonts.outfit(
-                              color: Colors.white,
+                              color: onScreen,
                               fontSize: 24 * scale,
                               fontWeight: FontWeight.w500,
                             ),
@@ -117,7 +127,7 @@ class RecommendationScreen extends StatelessWidget {
                     child: Text(
                       'Recommendations:',
                       style: GoogleFonts.outfit(
-                        color: Colors.white,
+                        color: onScreen,
                         fontSize: 16 * scale,
                         fontWeight: FontWeight.w700,
                       ),
@@ -157,8 +167,8 @@ class RecommendationScreen extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: () => context.push('/add-collection'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xffe7e7e7),
-                          foregroundColor: Colors.black,
+                          backgroundColor: isDark ? const Color(0xffe7e7e7) : const Color(0xFF1E1E1E),
+                          foregroundColor: isDark ? Colors.black : Colors.white,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(26 * scale),
@@ -167,7 +177,7 @@ class RecommendationScreen extends StatelessWidget {
                         child: Text(
                           'Buy Collections',
                           style: GoogleFonts.outfit(
-                            color: Colors.black,
+                            color: isDark ? Colors.black : Colors.white,
                             fontSize: 16 * scale,
                             fontWeight: FontWeight.w600,
                           ),
@@ -198,14 +208,22 @@ class _HeaderCircleButton extends StatelessWidget {
       width: 49,
       height: 49,
       decoration: BoxDecoration(
-        color: const Color(0xff5b5b5b).withValues(alpha: 0.78),
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xff5b5b5b).withValues(alpha: 0.78)
+            : Colors.black.withValues(alpha: 0.08),
         shape: BoxShape.circle,
       ),
       child: IconButton(
         onPressed: onPressed,
         padding: EdgeInsets.zero,
         splashRadius: 24.5,
-        icon: Icon(icon, color: Colors.white, size: 26),
+        icon: Icon(
+          icon,
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white
+              : const Color(0xFF1E1E1E),
+          size: 26,
+        ),
       ),
     );
   }

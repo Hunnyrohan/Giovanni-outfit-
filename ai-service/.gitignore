@@ -1,0 +1,31 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Model weights / large artifacts (added once real providers are wired up)
+*.pt
+*.pth
+*.safetensors
+*.ckpt
+.cache/
+weights/
+
+# Uploaded/generated images (keep folder, ignore contents)
+uploads/*
+!uploads/.gitkeep
+outputs/*
+!outputs/.gitkeep
+
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/

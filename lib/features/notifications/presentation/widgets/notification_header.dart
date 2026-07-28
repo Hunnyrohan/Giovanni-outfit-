@@ -7,6 +7,9 @@ class NotificationHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onScreen = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
       child: SizedBox(
@@ -30,7 +33,7 @@ class NotificationHeader extends StatelessWidget {
             Text(
               'Notification',
               style: GoogleFonts.outfit(
-                color: Colors.white,
+                color: onScreen,
                 fontSize: 22,
                 fontWeight: FontWeight.w500,
                 letterSpacing: 0,
@@ -64,6 +67,8 @@ class _CircleButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SizedBox(
       width: 56,
       height: 56,
@@ -72,10 +77,16 @@ class _CircleButton extends StatelessWidget {
         padding: EdgeInsets.zero,
         splashRadius: 28,
         style: IconButton.styleFrom(
-          backgroundColor: const Color(0xff5a5556).withValues(alpha: 0.78),
+          backgroundColor: isDark
+              ? const Color(0xff5a5556).withValues(alpha: 0.78)
+              : Colors.black.withValues(alpha: 0.07),
           shape: const CircleBorder(),
         ),
-        icon: Icon(icon, color: Colors.white, size: iconSize),
+        icon: Icon(
+          icon,
+          color: isDark ? Colors.white : const Color(0xFF1E1E1E),
+          size: iconSize,
+        ),
       ),
     );
   }

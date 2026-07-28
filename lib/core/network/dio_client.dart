@@ -5,12 +5,17 @@ import '../storage/token_storage.dart';
 class DioClient {
   final Dio dio;
   final TokenStorage tokenStorage;
+  Future<String?>? _refreshFuture;
 
   DioClient(this.dio, this.tokenStorage) {
     dio
       ..options.baseUrl = ApiConstants.baseUrl
-      ..options.connectTimeout = const Duration(milliseconds: ApiConstants.connectionTimeout)
-      ..options.receiveTimeout = const Duration(milliseconds: ApiConstants.receiveTimeout)
+      ..options.connectTimeout = const Duration(
+        milliseconds: ApiConstants.connectionTimeout,
+      )
+      ..options.receiveTimeout = const Duration(
+        milliseconds: ApiConstants.receiveTimeout,
+      )
       ..options.headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -19,19 +24,85 @@ class DioClient {
     // Add interceptor to append authorization token
     dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
-          final token = tokenStorage.getToken();
+        onRequest: (options, handler) async {
+          final token = await tokenStorage.getToken();
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
         },
         onError: (DioException e, handler) {
-          // You can handle global error behaviors here (like automatic logout on 401)
-          return handler.next(e);
+          if (e.response?.statusCode == 401) {
+            _handleTokenRefresh(e, handler);
+          } else {
+            return handler.next(e);
+          }
         },
       ),
     );
+  }
+
+  Future<void> _handleTokenRefresh(
+    DioException e,
+    ErrorInterceptorHandler handler,
+  ) async {
+    // Only one refresh call is ever in flight; concurrent 401s await the
+    // same future instead of firing their own /auth/refresh request.
+    final newToken = await (_refreshFuture ??= _refreshTokens());
+
+    if (newToken == null) {
+      return handler.next(e);
+    }
+
+    try {
+      final options = e.requestOptions;
+      options.headers['Authorization'] = 'Bearer $newToken';
+      final retryResponse = await dio.fetch(options);
+      return handler.resolve(retryResponse);
+    } catch (_) {
+      return handler.next(e);
+    }
+  }
+
+  /// Calls `/auth/refresh` and persists the rotated token pair.
+  /// Returns the new access token, or `null` if refresh failed (in which
+  /// case stored tokens are cleared so the app treats the session as logged out).
+  Future<String?> _refreshTokens() async {
+    try {
+      final refreshToken = await tokenStorage.getRefreshToken();
+      if (refreshToken == null || refreshToken.isEmpty) {
+        return null;
+      }
+
+      final response = await dio.post(
+        ApiConstants.refreshToken,
+        data: {'refreshToken': refreshToken},
+      );
+
+      final envelope = response.data;
+      final data = envelope is Map ? envelope['data'] : null;
+
+      if (response.statusCode == 200 && data is Map) {
+        final newToken = data['token'] as String?;
+        final newRefreshToken = data['refreshToken'] as String?;
+
+        if (newToken == null) {
+          return null;
+        }
+
+        await tokenStorage.saveToken(newToken);
+        if (newRefreshToken != null) {
+          await tokenStorage.saveRefreshToken(newRefreshToken);
+        }
+        return newToken;
+      }
+      return null;
+    } catch (_) {
+      await tokenStorage.deleteAllTokens();
+      return null;
+    } finally {
+      _refreshFuture = null;
+    }
   }
 
   // GET request wrapper
@@ -68,6 +139,32 @@ class DioClient {
   }) async {
     try {
       final response = await dio.post(
+        uri,
+        data: data,
+        queryParameters: queryParameters,
+        options: options,
+        cancelToken: cancelToken,
+        onSendProgress: onSendProgress,
+        onReceiveProgress: onReceiveProgress,
+      );
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // PATCH request wrapper
+  Future<Response> patch(
+    String uri, {
+    dynamic data,
+    Map<String, dynamic>? queryParameters,
+    Options? options,
+    CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    try {
+      final response = await dio.patch(
         uri,
         data: data,
         queryParameters: queryParameters,

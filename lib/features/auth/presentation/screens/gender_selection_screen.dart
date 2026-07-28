@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/constants/app_assets.dart';
+import '../../../../shared/widgets/app_ambient_background.dart';
 
 class GenderSelectionScreen extends StatefulWidget {
   const GenderSelectionScreen({super.key});
@@ -34,22 +34,12 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onScreen = isDark ? Colors.white : const Color(0xFF1E1E1E);
+    final onScreenMuted = isDark ? Colors.grey.shade400 : const Color(0xFF6E6A70);
+
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            colors: [
-              Color(0xff2d231b), // Soft warm gold/brown center glow
-              Color(0xff120f17), // Deep purple-black ambient transition
-              Color(0xff09070b), // Deep dark edge
-            ],
-            stops: [0.0, 0.7, 1.0],
-            center: Alignment(-0.5, -0.2),
-            radius: 1.5,
-          ),
-        ),
+      body: AppAmbientBackground(
         child: SafeArea(
           child: Column(
             children: [
@@ -79,7 +69,7 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
                 'Personal AI stylish',
                 style: GoogleFonts.outfit(
                   fontSize: 11,
-                  color: Colors.grey.shade400,
+                  color: onScreenMuted,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -92,301 +82,29 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
                 style: GoogleFonts.outfit(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white,
+                  color: onScreen,
                   letterSpacing: 0.5,
                 ),
               ),
               
-              const SizedBox(height: 36),
+              const SizedBox(height: 40),
 
-              // Gender Selection Cards Row
+              // Gender Selection Toggle Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Female Card (Left)
-                  GestureDetector(
+                  _GenderIconButton(
+                    isSelected: !_isMale,
                     onTap: () => setState(() => _isMale = false),
-                    child: AnimatedScale(
-                      scale: !_isMale ? 1.04 : 0.96,
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeInOutCubic,
-                      child: AnimatedOpacity(
-                        opacity: !_isMale ? 1.0 : 0.55,
-                        duration: const Duration(milliseconds: 250),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          width: 140,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: !_isMale 
-                                  ? const Color(0xffef586c) 
-                                  : Colors.white.withValues(alpha: 0.08),
-                              width: !_isMale ? 2.0 : 1.0,
-                            ),
-                            boxShadow: !_isMale 
-                                ? [
-                                    BoxShadow(
-                                      color: const Color(0xffef586c).withValues(alpha: 0.35),
-                                      blurRadius: 15,
-                                      spreadRadius: 2,
-                                    ),
-                                  ]
-                                : [],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(18),
-                            child: Stack(
-                              children: [
-                                // Background Image (Female model)
-                                Image.network(
-                                  AppAssets.femaleModelPlaceholder,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                                // Gradient Overlay
-                                Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.black.withValues(alpha: 0.15),
-                                        Colors.black.withValues(alpha: 0.85),
-                                      ],
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                    ),
-                                  ),
-                                ),
-                                // Selection Badge (Top Right)
-                                Positioned(
-                                  top: 10,
-                                  right: 10,
-                                  child: Container(
-                                    width: 24,
-                                    height: 24,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: !_isMale 
-                                          ? const Color(0xff00e676) 
-                                          : Colors.black45,
-                                      border: Border.all(
-                                        color: !_isMale 
-                                            ? const Color(0xff00e676) 
-                                            : Colors.white30,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: !_isMale 
-                                        ? const Icon(
-                                            Icons.check,
-                                            size: 14,
-                                            color: Colors.black,
-                                          )
-                                        : null,
-                                  ),
-                                ),
-                                // Custom Face Painter Icon (Center)
-                                Center(
-                                  child: Container(
-                                    width: 52,
-                                    height: 52,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white.withValues(alpha: 0.08),
-                                      border: Border.all(
-                                        color: Colors.white12,
-                                        width: 1.0,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: CustomPaint(
-                                        size: const Size(32, 32),
-                                        painter: FemaleFacePainter(
-                                          color: Colors.white.withValues(alpha: !_isMale ? 1.0 : 0.45),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // Bottom Labels
-                                Positioned(
-                                  bottom: 14,
-                                  left: 0,
-                                  right: 0,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'FEMALE',
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w800,
-                                          color: Colors.white,
-                                          letterSpacing: 1.5,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'Explore Women\'s Style',
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 8.5,
-                                          color: Colors.grey.shade400,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    painter: FemaleFacePainter(
+                        color: !_isMale ? Colors.white : onScreen.withValues(alpha: 0.6)),
                   ),
-                  const SizedBox(width: 20),
-                  // Male Card (Right)
-                  GestureDetector(
+                  const SizedBox(width: 18),
+                  _GenderIconButton(
+                    isSelected: _isMale,
                     onTap: () => setState(() => _isMale = true),
-                    child: AnimatedScale(
-                      scale: _isMale ? 1.04 : 0.96,
-                      duration: const Duration(milliseconds: 250),
-                      curve: Curves.easeInOutCubic,
-                      child: AnimatedOpacity(
-                        opacity: _isMale ? 1.0 : 0.55,
-                        duration: const Duration(milliseconds: 250),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 250),
-                          width: 140,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _isMale 
-                                  ? const Color(0xffef586c) 
-                                  : Colors.white.withValues(alpha: 0.08),
-                              width: _isMale ? 2.0 : 1.0,
-                            ),
-                            boxShadow: _isMale 
-                                ? [
-                                    BoxShadow(
-                                      color: const Color(0xffef586c).withValues(alpha: 0.35),
-                                      blurRadius: 15,
-                                      spreadRadius: 2,
-                                    ),
-                                  ]
-                                : [],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(18),
-                            child: Stack(
-                              children: [
-                                // Background Image (Male model)
-                                Image.network(
-                                  AppAssets.maleModelPlaceholder,
-                                  width: double.infinity,
-                                  height: double.infinity,
-                                  fit: BoxFit.cover,
-                                ),
-                                // Gradient Overlay
-                                Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: [
-                                        Colors.black.withValues(alpha: 0.15),
-                                        Colors.black.withValues(alpha: 0.85),
-                                      ],
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                    ),
-                                  ),
-                                ),
-                                // Selection Badge (Top Right)
-                                Positioned(
-                                  top: 10,
-                                  right: 10,
-                                  child: Container(
-                                    width: 24,
-                                    height: 24,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: _isMale 
-                                          ? const Color(0xff00e676) 
-                                          : Colors.black45,
-                                      border: Border.all(
-                                        color: _isMale 
-                                            ? const Color(0xff00e676) 
-                                            : Colors.white30,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: _isMale 
-                                        ? const Icon(
-                                            Icons.check,
-                                            size: 14,
-                                            color: Colors.black,
-                                          )
-                                        : null,
-                                  ),
-                                ),
-                                // Custom Face Painter Icon (Center)
-                                Center(
-                                  child: Container(
-                                    width: 52,
-                                    height: 52,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.white.withValues(alpha: 0.08),
-                                      border: Border.all(
-                                        color: Colors.white12,
-                                        width: 1.0,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: CustomPaint(
-                                        size: const Size(32, 32),
-                                        painter: MaleFacePainter(
-                                          color: Colors.white.withValues(alpha: _isMale ? 1.0 : 0.45),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // Bottom Labels
-                                Positioned(
-                                  bottom: 14,
-                                  left: 0,
-                                  right: 0,
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        'MALE',
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w800,
-                                          color: Colors.white,
-                                          letterSpacing: 1.5,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'Explore Men\'s Style',
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 8.5,
-                                          color: Colors.grey.shade400,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    painter: MaleFacePainter(
+                        color: _isMale ? Colors.white : onScreen.withValues(alpha: 0.6)),
                   ),
                 ],
               ),
@@ -439,7 +157,9 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
                           shape: BoxShape.circle,
                           color: _agreedToTerms ? const Color(0xff00e676) : Colors.transparent,
                           border: Border.all(
-                            color: _agreedToTerms ? const Color(0xff00e676) : Colors.white24,
+                            color: _agreedToTerms
+                                ? const Color(0xff00e676)
+                                : onScreen.withValues(alpha: 0.24),
                             width: 1.8,
                           ),
                         ),
@@ -458,7 +178,7 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
                         text: TextSpan(
                           style: GoogleFonts.outfit(
                             fontSize: 12,
-                            color: Colors.white,
+                            color: onScreen,
                             height: 1.4,
                           ),
                           children: [
@@ -481,6 +201,72 @@ class _GenderSelectionScreenState extends State<GenderSelectionScreen> {
               const SizedBox(height: 20),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A single gender toggle button: an unselected muted circle, or a wider
+/// highlighted pill with a checkmark badge when selected.
+class _GenderIconButton extends StatelessWidget {
+  const _GenderIconButton({
+    required this.isSelected,
+    required this.onTap,
+    required this.painter,
+  });
+
+  final bool isSelected;
+  final VoidCallback onTap;
+  final CustomPainter painter;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOutCubic,
+        width: isSelected ? 92 : 56,
+        height: 56,
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xffef586c)
+              : (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.06)),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xffef586c).withValues(alpha: 0.45),
+                    blurRadius: 16,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : [],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Center(
+              child: CustomPaint(size: const Size(26, 26), painter: painter),
+            ),
+            if (isSelected)
+              Positioned(
+                top: -6,
+                right: -6,
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xff00e676),
+                  ),
+                  child: const Icon(Icons.check, size: 14, color: Colors.black),
+                ),
+              ),
+          ],
         ),
       ),
     );

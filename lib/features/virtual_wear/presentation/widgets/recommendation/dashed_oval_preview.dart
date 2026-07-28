@@ -12,11 +12,13 @@ class DashedOvalPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SizedBox(
       width: width,
       height: height,
       child: CustomPaint(
-        painter: _DashedOvalPainter(),
+        painter: _DashedOvalPainter(isDark ? Colors.white : const Color(0xFF1E1E1E)),
         child: Padding(
           padding: const EdgeInsets.all(3),
           child: ClipOval(
@@ -37,13 +39,17 @@ class DashedOvalPreview extends StatelessWidget {
 }
 
 class _DashedOvalPainter extends CustomPainter {
+  _DashedOvalPainter(this.color);
+
+  final Color color;
+
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     final path = Path()..addOval(rect.deflate(2));
     final metric = path.computeMetrics().first;
     final paint = Paint()
-      ..color = Colors.white
+      ..color = color
       ..strokeWidth = 2.5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;

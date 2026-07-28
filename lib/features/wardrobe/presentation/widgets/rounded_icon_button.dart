@@ -14,6 +14,9 @@ class RoundedIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onSurface = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
     return SizedBox(
       width: size,
       height: size,
@@ -26,14 +29,14 @@ class RoundedIconButton extends StatelessWidget {
           height: size,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: Colors.white.withValues(alpha: 0.08),
+            color: onSurface.withValues(alpha: 0.08),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: onSurface.withValues(alpha: 0.1),
               width: 1.0,
             ),
           ),
           child: Center(
-            child: Icon(icon, color: Colors.white, size: size * 0.45),
+            child: Icon(icon, color: onSurface, size: size * 0.45),
           ),
         ),
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../shared/widgets/user_avatar.dart';
+
 class ProfileAvatarLarge extends StatelessWidget {
   const ProfileAvatarLarge({
     required this.imageUrl,
@@ -8,7 +10,7 @@ class ProfileAvatarLarge extends StatelessWidget {
     super.key,
   });
 
-  final String imageUrl;
+  final String? imageUrl;
   final String name;
 
   @override
@@ -23,19 +25,19 @@ class ProfileAvatarLarge extends StatelessWidget {
             color: Color(0xff17100f),
             shape: BoxShape.circle,
           ),
-          child: ClipOval(
-            child: Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              alignment: const Alignment(0, -0.18),
-            ),
+          child: UserAvatar(
+            imageUrl: imageUrl,
+            name: name,
+            size: 104,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           name,
           style: GoogleFonts.outfit(
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : const Color(0xFF1E1E1E),
             fontSize: 16,
             fontWeight: FontWeight.w400,
           ),

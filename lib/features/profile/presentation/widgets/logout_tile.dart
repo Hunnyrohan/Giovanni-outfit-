@@ -10,8 +10,8 @@ class LogoutTile extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => context.go('/login'),
-      child: SizedBox(
-        height: 31,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
         child: Row(
           children: [
             Expanded(
@@ -19,15 +19,15 @@ class LogoutTile extends StatelessWidget {
                 'Log Out',
                 style: GoogleFonts.poppins(
                   color: const Color(0xFFFF1E1E),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),
             const Icon(
-              Icons.logout_rounded,
+              Icons.exit_to_app_rounded,
               color: Color(0xFFFF1E1E),
-              size: 21,
+              size: 20,
             ),
           ],
         ),

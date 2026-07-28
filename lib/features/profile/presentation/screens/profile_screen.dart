@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../widgets/logout_tile.dart';
 import '../widgets/profile_avatar_section.dart';
 import '../widgets/profile_header.dart';
@@ -29,20 +31,10 @@ class ProfileScreen extends StatelessWidget {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF111111),
-              Color(0xFF050505),
-              Color(0xFF1A141D),
-              Color(0xFF30212F),
-            ],
-            stops: [0.0, 0.46, 0.78, 1.0],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+        decoration: BoxDecoration(
+          gradient: AppColors.screenGradientOf(context),
         ),
-        child: const SafeArea(
+        child: SafeArea(
           top: true,
           bottom: false,
           child: SingleChildScrollView(
@@ -51,18 +43,23 @@ class ProfileScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                ProfileHeader(),
-                SizedBox(height: 4),
-                ProfileAvatarSection(),
-                SizedBox(height: 28),
+                const ProfileHeader(),
+                const SizedBox(height: 4),
+                const ProfileAvatarSection(),
+                const SizedBox(height: 28),
                 ProfileMenuSection(
                   title: 'Account settings',
                   items: _accountItems,
+                  onItemTap: (item) {
+                    if (item == 'Privacy & security') {
+                      context.push('/privacy-security');
+                    }
+                  },
                 ),
-                SizedBox(height: 15),
-                ProfileMenuSection(title: 'Help & support', items: _helpItems),
-                SizedBox(height: 20),
-                LogoutTile(),
+                const SizedBox(height: 24),
+                const ProfileMenuSection(title: 'Help & support', items: _helpItems),
+                const SizedBox(height: 32),
+                const LogoutTile(),
               ],
             ),
           ),

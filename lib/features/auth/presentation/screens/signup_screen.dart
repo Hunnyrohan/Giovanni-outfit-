@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/utils/validators.dart';
+import '../../../../shared/widgets/app_ambient_background.dart';
 import '../providers/auth_provider.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -16,10 +17,11 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   late AnimationController _animController;
   late Animation<double> _fadeIn;
   late Animation<Offset> _slideIn;
@@ -41,9 +43,9 @@ class _SignupScreenState extends State<SignupScreen>
 
   @override
   void dispose() {
-    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -51,9 +53,11 @@ class _SignupScreenState extends State<SignupScreen>
   void _onSignupPressed() async {
     if (_formKey.currentState?.validate() ?? false) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final email = _emailController.text.trim();
+      final derivedName = email.contains('@') ? email.split('@').first : email;
       final success = await authProvider.register(
-        _nameController.text.trim(),
-        _emailController.text.trim(),
+        derivedName,
+        email,
         _passwordController.text,
       );
 
@@ -78,26 +82,41 @@ class _SignupScreenState extends State<SignupScreen>
     }
   }
 
+  void _onGooglePressed() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.googleLogin();
+
+    if (!mounted) return;
+
+    if (success) {
+      context.go('/home');
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          authProvider.errorMessage ?? 'Google sign up failed',
+          style: GoogleFonts.outfit(color: Colors.white),
+        ),
+        backgroundColor: const Color(0xffef586c),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLoading = context.watch<AuthProvider>().isLoading;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onScreen = isDark ? Colors.white : const Color(0xFF1E1E1E);
+    final onScreenMuted = isDark ? Colors.grey.shade400 : const Color(0xFF6E6A70);
+    final onScreenFaint = isDark ? Colors.grey.shade500 : const Color(0xFF8A8690);
+    final onScreenHint = isDark ? Colors.grey.shade600 : const Color(0xFFA39FA6);
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            colors: [
-              Color(0xff2d231b),
-              Color(0xff120f17),
-              Color(0xff09070b),
-            ],
-            stops: [0.0, 0.7, 1.0],
-            center: Alignment(-0.5, -0.3),
-            radius: 1.5,
-          ),
-        ),
+      body: AppAmbientBackground(
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeIn,
@@ -136,7 +155,7 @@ class _SignupScreenState extends State<SignupScreen>
                           'Personal AI stylist',
                           style: GoogleFonts.outfit(
                             fontSize: 11,
-                            color: Colors.grey.shade400,
+                            color: onScreenMuted,
                             letterSpacing: 0.5,
                           ),
                         ),
@@ -144,154 +163,124 @@ class _SignupScreenState extends State<SignupScreen>
 
                       const SizedBox(height: 36),
 
-                      // Back button row
-                      GestureDetector(
-                        onTap: isLoading ? null : () => context.go('/login'),
-                        child: Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.07),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.1),
-                              width: 1,
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: Colors.white70,
-                            size: 16,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 20),
-
                       // Title
                       Text(
-                        'Create account',
+                        'Signup for free.',
                         style: GoogleFonts.outfit(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: onScreen,
                           letterSpacing: 0.3,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Join Giovanni and discover your style',
-                        style: GoogleFonts.outfit(
-                          fontSize: 14,
-                          color: Colors.grey.shade400,
-                          letterSpacing: 0.2,
                         ),
                       ),
 
                       const SizedBox(height: 32),
 
-                      // Glass card form
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.09),
-                            width: 1.0,
+                      _buildTextField(
+                        controller: _emailController,
+                        hintText: 'Email',
+                        icon: Icons.email_outlined,
+                        keyboardType: TextInputType.emailAddress,
+                        readOnly: isLoading,
+                        validator: Validators.validateEmail,
+                        isDark: isDark,
+                        onScreen: onScreen,
+                        onScreenFaint: onScreenFaint,
+                        onScreenHint: onScreenHint,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      _buildTextField(
+                        controller: _passwordController,
+                        hintText: 'Password',
+                        icon: Icons.lock_outline_rounded,
+                        obscureText: _obscurePassword,
+                        readOnly: isLoading,
+                        validator: Validators.validatePassword,
+                        isDark: isDark,
+                        onScreen: onScreen,
+                        onScreenFaint: onScreenFaint,
+                        onScreenHint: onScreenHint,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: onScreenFaint,
+                            size: 20,
                           ),
+                          onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Full name field
-                            _buildLabel('Full Name'),
-                            const SizedBox(height: 8),
-                            _buildTextField(
-                              controller: _nameController,
-                              hintText: 'Enter your full name',
-                              icon: Icons.person_outline_rounded,
-                              readOnly: isLoading,
-                              validator: Validators.validateName,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      _buildTextField(
+                        controller: _confirmPasswordController,
+                        hintText: 'Confirm password',
+                        icon: Icons.lock_outline_rounded,
+                        obscureText: _obscureConfirmPassword,
+                        readOnly: isLoading,
+                        validator: (value) {
+                          if (value != _passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                        isDark: isDark,
+                        onScreen: onScreen,
+                        onScreenFaint: onScreenFaint,
+                        onScreenHint: onScreenHint,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            color: onScreenFaint,
+                            size: 20,
+                          ),
+                          onPressed: () => setState(() =>
+                              _obscureConfirmPassword = !_obscureConfirmPassword),
+                        ),
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // Continue button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : _onSignupPressed,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xffef586c),
+                            foregroundColor: Colors.white,
+                            disabledBackgroundColor:
+                                const Color(0xffef586c).withValues(alpha: 0.5),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
                             ),
-
-                            const SizedBox(height: 20),
-
-                            // Email field
-                            _buildLabel('Email'),
-                            const SizedBox(height: 8),
-                            _buildTextField(
-                              controller: _emailController,
-                              hintText: 'Enter your email',
-                              icon: Icons.email_outlined,
-                              keyboardType: TextInputType.emailAddress,
-                              readOnly: isLoading,
-                              validator: Validators.validateEmail,
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            // Password field
-                            _buildLabel('Password'),
-                            const SizedBox(height: 8),
-                            _buildTextField(
-                              controller: _passwordController,
-                              hintText: 'Create a password',
-                              icon: Icons.lock_outline_rounded,
-                              obscureText: _obscurePassword,
-                              readOnly: isLoading,
-                              validator: Validators.validatePassword,
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword
-                                      ? Icons.visibility_off_outlined
-                                      : Icons.visibility_outlined,
-                                  color: Colors.grey.shade500,
-                                  size: 20,
-                                ),
-                                onPressed: () => setState(
-                                    () => _obscurePassword = !_obscurePassword),
-                              ),
-                            ),
-
-                            const SizedBox(height: 28),
-
-                            // Sign Up button
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed: isLoading ? null : _onSignupPressed,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xffef586c),
-                                  foregroundColor: Colors.white,
-                                  disabledBackgroundColor:
-                                      const Color(0xffef586c).withValues(alpha: 0.5),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: isLoading
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : Text(
+                                  'Continue',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.2,
                                   ),
                                 ),
-                                child: isLoading
-                                    ? const SizedBox(
-                                        width: 22,
-                                        height: 22,
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 2.5,
-                                        ),
-                                      )
-                                    : Text(
-                                        'Sign Up',
-                                        style: GoogleFonts.outfit(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          letterSpacing: 0.2,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ],
                         ),
                       ),
 
@@ -302,23 +291,23 @@ class _SignupScreenState extends State<SignupScreen>
                         children: [
                           Expanded(
                             child: Divider(
-                              color: Colors.white.withValues(alpha: 0.12),
+                              color: onScreen.withValues(alpha: 0.12),
                               thickness: 1,
                             ),
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 14),
                             child: Text(
-                              'or',
+                              'Or signup via',
                               style: GoogleFonts.outfit(
-                                color: Colors.grey.shade500,
+                                color: onScreenFaint,
                                 fontSize: 13,
                               ),
                             ),
                           ),
                           Expanded(
                             child: Divider(
-                              color: Colors.white.withValues(alpha: 0.12),
+                              color: onScreen.withValues(alpha: 0.12),
                               thickness: 1,
                             ),
                           ),
@@ -341,16 +330,19 @@ class _SignupScreenState extends State<SignupScreen>
                                 child: CustomPaint(
                                     painter: _GoogleLogoPainter()),
                               ),
-                              onTap: () {},
+                              onTap: isLoading ? () {} : _onGooglePressed,
+                              isDark: isDark,
+                              onScreen: onScreen,
                             ),
                           ),
                           const SizedBox(width: 14),
                           Expanded(
                             child: _buildSocialButton(
                               label: 'Apple',
-                              icon: const Icon(Icons.apple,
-                                  color: Colors.white, size: 20),
+                              icon: Icon(Icons.apple, color: onScreen, size: 20),
                               onTap: () {},
+                              isDark: isDark,
+                              onScreen: onScreen,
                             ),
                           ),
                         ],
@@ -365,14 +357,14 @@ class _SignupScreenState extends State<SignupScreen>
                           child: RichText(
                             text: TextSpan(
                               style: GoogleFonts.outfit(
-                                  color: Colors.grey.shade400, fontSize: 14),
+                                  color: onScreenMuted, fontSize: 14),
                               children: [
                                 const TextSpan(
                                     text: 'Already have an account? '),
                                 TextSpan(
-                                  text: 'Log In',
+                                  text: 'Login',
                                   style: GoogleFonts.outfit(
-                                    color: const Color(0xff6c63ff),
+                                    color: const Color(0xff4ade80),
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
@@ -394,18 +386,6 @@ class _SignupScreenState extends State<SignupScreen>
     );
   }
 
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: GoogleFonts.outfit(
-        color: Colors.grey.shade300,
-        fontSize: 13,
-        fontWeight: FontWeight.w500,
-        letterSpacing: 0.3,
-      ),
-    );
-  }
-
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
@@ -415,6 +395,10 @@ class _SignupScreenState extends State<SignupScreen>
     bool readOnly = false,
     String? Function(String?)? validator,
     Widget? suffixIcon,
+    bool isDark = true,
+    Color onScreen = Colors.white,
+    Color onScreenFaint = Colors.grey,
+    Color onScreenHint = Colors.grey,
   }) {
     return TextFormField(
       controller: controller,
@@ -422,35 +406,35 @@ class _SignupScreenState extends State<SignupScreen>
       obscureText: obscureText,
       readOnly: readOnly,
       validator: validator,
-      style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+      style: GoogleFonts.outfit(color: onScreen, fontSize: 14),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle:
-            GoogleFonts.outfit(color: Colors.grey.shade600, fontSize: 14),
-        prefixIcon: Icon(icon, color: Colors.grey.shade500, size: 20),
+            GoogleFonts.outfit(color: onScreenHint, fontSize: 14),
+        prefixIcon: Icon(icon, color: onScreenFaint, size: 20),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.06),
+        fillColor: (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.08 : 0.05),
         contentPadding:
-            const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+            const EdgeInsets.symmetric(vertical: 16, horizontal: 18),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+          borderRadius: BorderRadius.circular(28),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+          borderRadius: BorderRadius.circular(28),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(28),
           borderSide: const BorderSide(color: Color(0xff6c63ff), width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(28),
           borderSide: const BorderSide(color: Color(0xffef586c), width: 1.0),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(28),
           borderSide: const BorderSide(color: Color(0xffef586c), width: 1.5),
         ),
         errorStyle: GoogleFonts.outfit(
@@ -463,18 +447,16 @@ class _SignupScreenState extends State<SignupScreen>
     required String label,
     required Widget icon,
     required VoidCallback onTap,
+    bool isDark = true,
+    Color onScreen = Colors.white,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: 48,
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.09),
-            width: 1.0,
-          ),
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: isDark ? 0.08 : 0.05),
+          borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -484,7 +466,7 @@ class _SignupScreenState extends State<SignupScreen>
             Text(
               label,
               style: GoogleFonts.outfit(
-                color: Colors.white,
+                color: onScreen,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),

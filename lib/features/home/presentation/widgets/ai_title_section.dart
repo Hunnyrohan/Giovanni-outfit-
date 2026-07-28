@@ -6,22 +6,28 @@ class AiTitleSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(
-          'Ask your personal\nAI stylish',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontSize: 20,
-            height: 1.22,
-            letterSpacing: 1.15,
-            fontWeight: FontWeight.w400,
-          ),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return RichText(
+      text: TextSpan(
+        style: GoogleFonts.poppins(
+          color: isDark ? Colors.white : const Color(0xFF1E1E1E),
+          fontSize: 20,
+          height: 1.22,
+          letterSpacing: 1.15,
+          fontWeight: FontWeight.w400,
         ),
-        const SizedBox(width: 5),
-        const Padding(padding: EdgeInsets.only(bottom: 4), child: _AiDots()),
-      ],
+        children: const [
+          TextSpan(text: 'Ask your personal\nAI stylish '),
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 4),
+              child: _AiDots(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

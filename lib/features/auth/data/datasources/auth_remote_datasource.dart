@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter/services.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/api_exception.dart';
@@ -6,35 +10,52 @@ import '../../../../core/network/dio_client.dart';
 
 abstract class AuthRemoteDataSource {
   Future<Map<String, dynamic>> login(String email, String password);
-  Future<Map<String, dynamic>> register(String name, String email, String password);
+  Future<Map<String, dynamic>> verifyTwoFactor(String twoFactorToken, String code);
+  Future<Map<String, dynamic>> googleLogin();
+  Future<Map<String, dynamic>> register(
+    String name,
+    String email,
+    String password,
+  );
   Future<Map<String, dynamic>> getProfile();
+  Future<Map<String, dynamic>> uploadProfilePicture(File imageFile);
+  Future<void> logout();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final DioClient dioClient;
+  final GoogleSignIn googleSignIn;
 
-  AuthRemoteDataSourceImpl(this.dioClient);
+  AuthRemoteDataSourceImpl(this.dioClient, {GoogleSignIn? googleSignIn})
+    : googleSignIn =
+          googleSignIn ??
+          GoogleSignIn(
+            scopes: const ['email', 'profile'],
+            serverClientId: ApiConstants.googleClientId,
+          );
+
+  /// Unwraps the standard `{success, message, data}` envelope and returns
+  /// the `data` object, which contains `user`, `token`, `refreshToken`, `tokens`.
+  Map<String, dynamic> _unwrapAuthEnvelope(Response response) {
+    if (response.data != null && response.data is Map<String, dynamic>) {
+      final envelope = response.data as Map<String, dynamic>;
+      final data = envelope['data'];
+      if (data is Map<String, dynamic>) {
+        return data;
+      }
+    }
+    throw const ServerException('Invalid authentication response from server');
+  }
 
   @override
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final response = await dioClient.post(
         ApiConstants.login,
-        data: {
-          'email': email,
-          'password': password,
-        },
+        data: {'email': email, 'password': password},
       );
-      if (response.data != null && response.data is Map<String, dynamic>) {
-        return response.data as Map<String, dynamic>;
-      }
-      throw const ServerException('Invalid login response from server');
+      return _unwrapAuthEnvelope(response);
     } on DioException catch (dioError) {
-      // Fallback dummy database logic for testing when no server is running
-      if (dioError.type == DioExceptionType.connectionError || 
-          dioError.type == DioExceptionType.connectionTimeout) {
-        return _mockLoginResponse(email);
-      }
       throw ApiException.handleDioError(dioError);
     } catch (e) {
       throw ServerException(e.toString());
@@ -42,25 +63,69 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<Map<String, dynamic>> register(String name, String email, String password) async {
+  Future<Map<String, dynamic>> verifyTwoFactor(String twoFactorToken, String code) async {
+    try {
+      final response = await dioClient.post(
+        ApiConstants.twoFactorVerify,
+        data: {'twoFactorToken': twoFactorToken, 'code': code},
+      );
+      return _unwrapAuthEnvelope(response);
+    } on DioException catch (dioError) {
+      throw ApiException.handleDioError(dioError);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> googleLogin() async {
+    try {
+      await googleSignIn.signOut();
+      final googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        throw const AuthException('Google sign in was cancelled');
+      }
+
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+
+      if (idToken == null || idToken.isEmpty) {
+        throw const AuthException('Google did not return an ID token');
+      }
+
+      final response = await dioClient.post(
+        ApiConstants.googleLogin,
+        data: {'idToken': idToken},
+      );
+
+      return _unwrapAuthEnvelope(response);
+    } on PlatformException {
+      throw AuthException(
+        'Google sign-in failed on Android. Check that your Google OAuth Android client uses package name com.rohan.outfit_ai_app and SHA-1 03:19:20:ED:0E:73:38:DE:29:DA:99:69:A4:61:86:4F:8D:CF:0A:30, and that the web client ID matches the backend.',
+      );
+    } on DioException catch (dioError) {
+      throw ApiException.handleDioError(dioError);
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> register(
+    String name,
+    String email,
+    String password,
+  ) async {
     try {
       final response = await dioClient.post(
         ApiConstants.register,
-        data: {
-          'name': name,
-          'email': email,
-          'password': password,
-        },
+        data: {'name': name, 'email': email, 'password': password},
       );
-      if (response.data != null && response.data is Map<String, dynamic>) {
-        return response.data as Map<String, dynamic>;
-      }
-      throw const ServerException('Invalid registration response from server');
+      return _unwrapAuthEnvelope(response);
     } on DioException catch (dioError) {
-      if (dioError.type == DioExceptionType.connectionError || 
-          dioError.type == DioExceptionType.connectionTimeout) {
-        return _mockRegisterResponse(name, email);
-      }
       throw ApiException.handleDioError(dioError);
     } catch (e) {
       throw ServerException(e.toString());
@@ -72,63 +137,64 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final response = await dioClient.get(ApiConstants.profile);
       if (response.data != null && response.data is Map<String, dynamic>) {
-        // The API returns the profile directly or inside a user block
-        final data = response.data as Map<String, dynamic>;
-        if (data.containsKey('user')) {
-          return data['user'] as Map<String, dynamic>;
+        final envelope = response.data as Map<String, dynamic>;
+        final data = envelope['data'];
+        if (data is Map && data['user'] is Map) {
+          return (data['user'] as Map).cast<String, dynamic>();
         }
-        return data;
       }
       throw const ServerException('Invalid profile response from server');
     } on DioException catch (dioError) {
-      if (dioError.type == DioExceptionType.connectionError || 
-          dioError.type == DioExceptionType.connectionTimeout) {
-        return _mockProfileResponse();
-      }
       throw ApiException.handleDioError(dioError);
     } catch (e) {
       throw ServerException(e.toString());
     }
   }
 
-  // --- Fallback Mock Database Helpers ---
+  @override
+  Future<Map<String, dynamic>> uploadProfilePicture(File imageFile) async {
+    try {
+      final formData = FormData.fromMap({
+        'profileImage': await MultipartFile.fromFile(
+          imageFile.path,
+          filename: imageFile.uri.pathSegments.last,
+        ),
+      });
 
-  Future<Map<String, dynamic>> _mockLoginResponse(String email) async {
-    await Future.delayed(const Duration(seconds: 1)); // simulate network lag
-    if (email.contains('error')) {
-      throw const AuthException('Invalid email or password.');
+      final response = await dioClient.post(
+        ApiConstants.profilePicture,
+        data: formData,
+      );
+
+      if (response.data != null && response.data is Map<String, dynamic>) {
+        final data = response.data as Map<String, dynamic>;
+        final nested = data['data'];
+        if (nested is Map && nested['user'] is Map) {
+          return nested['user'] as Map<String, dynamic>;
+        }
+        if (data['user'] is Map) {
+          return data['user'] as Map<String, dynamic>;
+        }
+        return data;
+      }
+      throw const ServerException(
+        'Invalid profile picture response from server',
+      );
+    } on DioException catch (dioError) {
+      throw ApiException.handleDioError(dioError);
+    } catch (e) {
+      throw ServerException(e.toString());
     }
-    return {
-      'token': 'mock_jwt_token_stylesense_ai',
-      'user': {
-        'id': 'user_01_mock',
-        'name': 'Sarah Jenkins',
-        'email': email,
-        'profilePicture': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-      }
-    };
   }
 
-  Future<Map<String, dynamic>> _mockRegisterResponse(String name, String email) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return {
-      'token': 'mock_jwt_token_stylesense_ai',
-      'user': {
-        'id': 'user_01_mock',
-        'name': name,
-        'email': email,
-        'profilePicture': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-      }
-    };
-  }
-
-  Future<Map<String, dynamic>> _mockProfileResponse() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return {
-      'id': 'user_01_mock',
-      'name': 'Sarah Jenkins',
-      'email': 'sarah.stylesense@example.com',
-      'profilePicture': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-    };
+  @override
+  Future<void> logout() async {
+    try {
+      await dioClient.post(ApiConstants.logout);
+    } on DioException catch (dioError) {
+      throw ApiException.handleDioError(dioError);
+    } catch (e) {
+      throw ServerException(e.toString());
+    }
   }
 }

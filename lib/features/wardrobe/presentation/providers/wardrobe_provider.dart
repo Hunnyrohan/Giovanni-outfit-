@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../../domain/entities/wardrobe_item_entity.dart';
 import '../../domain/usecases/get_wardrobe_items_usecase.dart';
@@ -131,15 +133,62 @@ class WardrobeProvider extends ChangeNotifier {
   Future<void> addToWardrobe(WardrobeItemEntity item) async {
     try {
       await repository.addToWardrobe(item);
-      
+
       // Instantly add to wardrobe in-memory
       final exists = _wardrobeItems.any((e) => e.id == item.id);
       if (!exists) {
         _wardrobeItems.add(item.copyWith(isMarketplaceItem: false, isSavedOutfit: false));
       }
-      
+
       // Remove from marketplace or keep it
       notifyListeners();
     } catch (_) {}
+  }
+
+  /// Display chip label -> backend ItemCategory enum, matching how seeded
+  /// items are stored (enum in `category`, chip label in `subCategory`).
+  static const Map<String, String> captureCategories = {
+    'T-shirts': 'TOP',
+    'Crop top': 'TOP',
+    'Jacket': 'OUTERWEAR',
+    'Jeans': 'BOTTOM',
+    'Shoes': 'SHOES',
+    'Other': 'OTHER',
+  };
+
+  bool _isAddingItem = false;
+  bool get isAddingItem => _isAddingItem;
+
+  String? _addItemError;
+  String? get addItemError => _addItemError;
+
+  /// Uploads a camera-captured photo as a real wardrobe item on the backend.
+  /// Returns true on success; on failure [addItemError] has the reason.
+  Future<bool> addCapturedItem({
+    required String name,
+    required String displayCategory,
+    required File image,
+  }) async {
+    _isAddingItem = true;
+    _addItemError = null;
+    notifyListeners();
+
+    try {
+      final created = await repository.addCapturedItem(
+        name: name,
+        category: captureCategories[displayCategory] ?? 'OTHER',
+        subCategory: displayCategory == 'Other' ? null : displayCategory,
+        image: image,
+      );
+      _wardrobeItems.insert(0, created);
+      _isAddingItem = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isAddingItem = false;
+      _addItemError = e.toString();
+      notifyListeners();
+      return false;
+    }
   }
 }

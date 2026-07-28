@@ -10,7 +10,7 @@ class ProfileLocalDatasource {
     name: 'Georgia Smith',
     email: 'geosmith009@gmail.com',
     avatarImage:
-        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=500&q=90',
+        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=500&q=90',
     likesCount: '1.2K',
     collectionCount: 6,
   );
@@ -25,30 +25,30 @@ class ProfileLocalDatasource {
   List<ProfileCollectionEntity> getCollections() => const [
     ProfileCollectionEntity(
       id: 'collection-1',
-      title: 'Black t-shirt',
+      title: 'White t-shirt',
       imageUrl:
           'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=500&q=85',
-      price: 21,
+      price: 2100,
       rating: 4.5,
       category: 'T-shirts',
       isFavorite: false,
     ),
     ProfileCollectionEntity(
       id: 'collection-2',
-      title: 'Black t-shirt',
+      title: 'White dress shirt',
       imageUrl:
           'https://images.unsplash.com/photo-1603252109303-2751441dd157?auto=format&fit=crop&w=500&q=85',
-      price: 21,
+      price: 2100,
       rating: 4.5,
       category: 'Shirts',
       isFavorite: false,
     ),
     ProfileCollectionEntity(
       id: 'collection-3',
-      title: 'Two tone shirt',
+      title: 'White shirt & tie',
       imageUrl:
           'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=500&q=85',
-      price: 24,
+      price: 2400,
       rating: 4.7,
       category: 'Shirts',
       isFavorite: true,

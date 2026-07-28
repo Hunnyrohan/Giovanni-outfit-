@@ -15,7 +15,7 @@ class HomeProvider extends ChangeNotifier {
   final List<String> categories = const [
     'Office',
     'Casual Outings',
-    'Formal Party',
+    'Formal',
     'College',
     'Date Night',
   ];

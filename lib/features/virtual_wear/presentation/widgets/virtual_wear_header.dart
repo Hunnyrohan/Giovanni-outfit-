@@ -71,6 +71,8 @@ class _HeaderButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return SizedBox(
       width: 42,
       height: 42,
@@ -79,10 +81,16 @@ class _HeaderButton extends StatelessWidget {
         padding: EdgeInsets.zero,
         splashRadius: 21,
         style: IconButton.styleFrom(
-          backgroundColor: const Color(0xff4a4a4a).withValues(alpha: 0.85),
+          backgroundColor: isDark
+              ? const Color(0xff4a4a4a).withValues(alpha: 0.85)
+              : Colors.white.withValues(alpha: 0.85),
           shape: const CircleBorder(),
         ),
-        icon: Icon(icon, color: Colors.white, size: iconSize),
+        icon: Icon(
+          icon,
+          color: isDark ? Colors.white : const Color(0xFF1E1E1E),
+          size: iconSize,
+        ),
       ),
     );
   }

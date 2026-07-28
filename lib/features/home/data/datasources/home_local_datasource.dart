@@ -26,11 +26,11 @@ class HomeLocalDataSource {
       RecommendedOutfitModel(
         id: 'navy-formal-dress',
         title: 'Navy Formal Dress',
-        category: 'Formal Party',
+        category: 'Formal',
         imageUrl:
             'https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=900&q=85',
         isFavorite: false,
-        occasion: 'Formal Party',
+        occasion: 'Formal',
         description: 'Structured navy dress for an elegant evening profile.',
       ),
       RecommendedOutfitModel(

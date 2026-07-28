@@ -11,9 +11,11 @@ class UserModel extends UserEntity {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
-      name: json['name']?.toString() ?? '',
+      name: json['fullName']?.toString() ?? json['name']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
-      profilePicture: json['profilePicture']?.toString() ?? json['avatar']?.toString(),
+      profilePicture: json['profileImage']?.toString() ??
+          json['profilePicture']?.toString() ??
+          json['avatar']?.toString(),
     );
   }
 

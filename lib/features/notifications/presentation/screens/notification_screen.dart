@@ -76,22 +76,31 @@ class NotificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: isDark ? Colors.black : const Color(0xffF3F1EF),
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xff302626),
-              Color(0xff0b0b0b),
-              Color(0xff11110e),
-              Color(0xff30222f),
-            ],
-            stops: [0, 0.42, 0.72, 1],
+            colors: isDark
+                ? const [
+                    Color(0xff302626),
+                    Color(0xff0b0b0b),
+                    Color(0xff11110e),
+                    Color(0xff30222f),
+                  ]
+                : const [
+                    Color(0xffEDE6DB),
+                    Color(0xffF4F2F0),
+                    Color(0xffF3F1EF),
+                    Color(0xffE8DFE9),
+                  ],
+            stops: const [0, 0.42, 0.72, 1],
           ),
         ),
         child: const SafeArea(

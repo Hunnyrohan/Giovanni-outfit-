@@ -89,4 +89,43 @@ class AppTheme {
       ),
     );
   }
+
+  /// Dark counterpart. Most screens paint their own dark gradients, so this
+  /// mainly sets `brightness` (which drives AppColors.*Of(context) helpers,
+  /// dialogs, pickers) and sane dark defaults for Material widgets.
+  static ThemeData get darkTheme {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: const Color(0xFF131313),
+
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.primary,
+        brightness: Brightness.dark,
+        primary: AppColors.primary,
+        secondary: AppColors.secondary,
+        surface: const Color(0xFF1C1C1E),
+      ),
+
+      textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
+
+      appBarTheme: AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        titleTextStyle: GoogleFonts.outfit(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: const Color(0xFF1C1C1E),
+        indicatorColor: AppColors.primary.withValues(alpha: 0.2),
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      ),
+    );
+  }
 }

@@ -15,6 +15,9 @@ class SizeOptionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onScreen = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -23,9 +26,11 @@ class SizeOptionChip extends StatelessWidget {
         height: 36,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: isSelected ? Colors.white : const Color(0xff1e1e1e),
+          color: isSelected
+              ? onScreen
+              : (isDark ? const Color(0xff1e1e1e) : Colors.black.withValues(alpha: 0.05)),
           border: Border.all(
-            color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.05),
+            color: isSelected ? onScreen : onScreen.withValues(alpha: 0.08),
             width: 1.0,
           ),
         ),
@@ -33,7 +38,9 @@ class SizeOptionChip extends StatelessWidget {
           child: Text(
             size,
             style: GoogleFonts.outfit(
-              color: isSelected ? Colors.black : const Color(0xffbdbdbd),
+              color: isSelected
+                  ? (isDark ? Colors.black : Colors.white)
+                  : (isDark ? const Color(0xffbdbdbd) : const Color(0xFF6E6A70)),
               fontSize: 13,
               fontWeight: FontWeight.bold,
             ),

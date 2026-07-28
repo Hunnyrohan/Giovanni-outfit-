@@ -7,9 +7,13 @@ import '../models/user_model.dart';
 
 abstract class AuthLocalDataSource {
   Future<void> saveToken(String token);
-  String? getToken();
+  Future<String?> getToken();
   Future<void> deleteToken();
-  
+
+  Future<void> saveRefreshToken(String refreshToken);
+  Future<String?> getRefreshToken();
+  Future<void> deleteRefreshToken();
+
   Future<void> cacheUser(UserModel userToCache);
   Future<UserModel> getCachedUser();
   Future<void> clearCache();
@@ -28,14 +32,15 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<void> saveToken(String token) async {
     try {
       final success = await tokenStorage.saveToken(token);
-      if (!success) throw const CacheException('Failed to cache authentication token.');
+      if (!success)
+        throw const CacheException('Failed to cache authentication token.');
     } catch (e) {
       throw const CacheException();
     }
   }
 
   @override
-  String? getToken() {
+  Future<String?> getToken() {
     return tokenStorage.getToken();
   }
 
@@ -43,7 +48,35 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<void> deleteToken() async {
     try {
       final success = await tokenStorage.deleteToken();
-      if (!success) throw const CacheException('Failed to remove cached token.');
+      if (!success)
+        throw const CacheException('Failed to remove cached token.');
+    } catch (e) {
+      throw const CacheException();
+    }
+  }
+
+  @override
+  Future<void> saveRefreshToken(String refreshToken) async {
+    try {
+      final success = await tokenStorage.saveRefreshToken(refreshToken);
+      if (!success)
+        throw const CacheException('Failed to cache refresh token.');
+    } catch (e) {
+      throw const CacheException();
+    }
+  }
+
+  @override
+  Future<String?> getRefreshToken() {
+    return tokenStorage.getRefreshToken();
+  }
+
+  @override
+  Future<void> deleteRefreshToken() async {
+    try {
+      final success = await tokenStorage.deleteRefreshToken();
+      if (!success)
+        throw const CacheException('Failed to remove cached refresh token.');
     } catch (e) {
       throw const CacheException();
     }
@@ -53,8 +86,12 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<void> cacheUser(UserModel userToCache) async {
     try {
       final userJson = jsonEncode(userToCache.toJson());
-      final success = await sharedPreferences.setString(AppConstants.cachedUserKey, userJson);
-      if (!success) throw const CacheException('Failed to cache user profile info.');
+      final success = await sharedPreferences.setString(
+        AppConstants.cachedUserKey,
+        userJson,
+      );
+      if (!success)
+        throw const CacheException('Failed to cache user profile info.');
     } catch (e) {
       throw const CacheException();
     }
@@ -78,6 +115,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<void> clearCache() async {
     try {
       await deleteToken();
+      await deleteRefreshToken();
       await sharedPreferences.remove(AppConstants.cachedUserKey);
     } catch (e) {
       throw const CacheException();

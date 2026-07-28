@@ -14,6 +14,9 @@ class ColorDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ring = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -24,13 +27,13 @@ class ColorDot extends StatelessWidget {
           shape: BoxShape.circle,
           color: color,
           border: Border.all(
-            color: isSelected ? Colors.white : Colors.transparent,
+            color: isSelected ? ring : Colors.transparent,
             width: 2.0,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: ring.withValues(alpha: 0.3),
                     blurRadius: 6,
                     spreadRadius: 1,
                   )

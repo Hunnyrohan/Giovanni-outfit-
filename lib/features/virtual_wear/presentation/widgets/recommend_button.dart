@@ -1,21 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/virtual_wear_provider.dart';
 
 class RecommendButton extends StatelessWidget {
   const RecommendButton({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<VirtualWearProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final onChrome = isDark ? Colors.white : const Color(0xFF1E1E1E);
+
     return SizedBox(
       width: 165,
       height: 45,
       child: OutlinedButton(
-        onPressed: () => context.push('/outfit-suggestions'),
+        onPressed: provider.canGenerate ? () => context.read<VirtualWearProvider>().startTryOn() : null,
         style: OutlinedButton.styleFrom(
           padding: EdgeInsets.zero,
-          backgroundColor: Colors.black.withValues(alpha: 0.25),
-          side: const BorderSide(color: Colors.white, width: 1.5),
+          backgroundColor: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.25),
+          side: BorderSide(color: onChrome, width: 1.5),
+          disabledForegroundColor: onChrome.withValues(alpha: 0.38),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
           ),
@@ -24,9 +31,9 @@ class RecommendButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Recommend',
+              'Generate',
               style: GoogleFonts.outfit(
-                color: Colors.white,
+                color: provider.canGenerate ? onChrome : onChrome.withValues(alpha: 0.38),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/utils/currency.dart';
+
 import '../../../wardrobe/domain/entities/wardrobe_item_entity.dart';
 import '../../domain/entities/profile_collection_entity.dart';
 
@@ -25,6 +27,15 @@ class ProfileCollectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final onScreen = Theme.of(context).brightness == Brightness.dark
+        ? Colors.white
+        : const Color(0xFF1E1E1E);
+    final smallStyle = GoogleFonts.outfit(
+      color: onScreen,
+      fontSize: 7,
+      fontWeight: FontWeight.w300,
+    );
+
     return GestureDetector(
       onTap: () => context.push('/product-details', extra: _wardrobeItem),
       child: SizedBox(
@@ -44,23 +55,23 @@ class ProfileCollectionCard extends StatelessWidget {
             const SizedBox(height: 3),
             Row(
               children: [
-                Text('705', style: _smallStyle),
+                Text('705', style: smallStyle),
                 const SizedBox(width: 3),
                 const Icon(Icons.star_rounded, color: Color(0xffd8ff1f), size: 9),
-                Text(' ${collection.rating}  (21)', style: _smallStyle),
+                Text(' ${collection.rating}  (21)', style: smallStyle),
               ],
             ),
             Text(
               collection.title,
               maxLines: 1,
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+              style: GoogleFonts.outfit(color: onScreen, fontSize: 13),
             ),
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    '\$${collection.price.toStringAsFixed(2)}',
-                    style: _smallStyle,
+                    Currency.format(collection.price),
+                    style: smallStyle,
                   ),
                 ),
                 SizedBox(
@@ -69,12 +80,12 @@ class ProfileCollectionCard extends StatelessWidget {
                     onPressed: () => context.push('/virtual-wear', extra: _wardrobeItem),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      side: const BorderSide(color: Colors.white),
+                      side: BorderSide(color: onScreen),
                       shape: const StadiumBorder(),
                     ),
                     child: Text(
                       'Try virtually',
-                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 8.5),
+                      style: GoogleFonts.outfit(color: onScreen, fontSize: 8.5),
                     ),
                   ),
                 ),
@@ -85,10 +96,4 @@ class ProfileCollectionCard extends StatelessWidget {
       ),
     );
   }
-
-  TextStyle get _smallStyle => GoogleFonts.outfit(
-    color: Colors.white,
-    fontSize: 7,
-    fontWeight: FontWeight.w300,
-  );
 }

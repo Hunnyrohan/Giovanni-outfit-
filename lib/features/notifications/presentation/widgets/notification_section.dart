@@ -41,7 +41,9 @@ class NotificationSection extends StatelessWidget {
             child: Text(
               title,
               style: GoogleFonts.outfit(
-                color: const Color(0xffa6a6a6),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xffa6a6a6)
+                    : const Color(0xFF6E6A70),
                 fontSize: 12,
                 fontWeight: FontWeight.w300,
               ),

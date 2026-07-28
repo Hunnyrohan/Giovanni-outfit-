@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../shared/widgets/app_custom_drawer.dart';
 import '../widgets/ai_search_bar.dart';
@@ -32,11 +33,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       key: _scaffoldKey,
       drawer: const AppCustomDrawer(),
       drawerScrimColor: Colors.black.withValues(alpha: 0.45),
-      backgroundColor: const Color(0xff101010),
+      backgroundColor: isDark ? const Color(0xff101010) : const Color(0xffF3F1EF),
       body: LayoutBuilder(
         builder: (context, constraints) {
           final widthScale = constraints.maxWidth / _designWidth;
@@ -78,11 +81,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             right: 15,
                             child: AiTitleSection(),
                           ),
-                          const Positioned(
+                          Positioned(
                             top: 162,
                             left: 15,
                             width: 273,
-                            child: AiSearchBar(),
+                            child: GestureDetector(
+                              onTap: () => context.push('/ai-stylist'),
+                              child: const AiSearchBar(),
+                            ),
                           ),
                           Positioned(
                             top: 231,
@@ -90,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Text(
                               'Recommended for you',
                               style: GoogleFonts.poppins(
-                                color: Colors.white,
+                                color: isDark ? Colors.white : const Color(0xFF1E1E1E),
                                 fontSize: 12.8,
                                 fontWeight: FontWeight.w400,
                               ),
@@ -114,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: OutfitCarousel(category: _selectedCategory),
                           ),
                           Positioned(
-                            top: 556,
+                            top: 608,
                             left: 61,
                             child: const FloatingHomeNav(),
                           ),
@@ -137,17 +143,37 @@ class _HomeBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: const Color(0xff0d0d0d),
-        gradient: LinearGradient(
-          begin: Alignment.topRight,
-          end: Alignment.centerLeft,
-          colors: [
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // Light mode mirrors the splash/onboarding aesthetic: warm off-white
+    // base with soft olive and lilac radial tints in the same positions
+    // as the dark theme's glow blobs.
+    final baseColor = isDark ? const Color(0xff0d0d0d) : const Color(0xffF3F1EF);
+    final gradientColors = isDark
+        ? [
             const Color(0xff342527).withValues(alpha: 0.82),
             const Color(0xff111111),
             const Color(0xff0b0b0b),
-          ],
+          ]
+        : [
+            const Color(0xffE7DFD3),
+            const Color(0xffF3F1EF),
+            const Color(0xffECE7E9),
+          ];
+    final oliveBlob = isDark
+        ? const Color(0xff7f743f).withValues(alpha: 0.48)
+        : const Color(0xffB3A265).withValues(alpha: 0.35);
+    final lilacBlob = isDark
+        ? const Color(0xff7a4d75).withValues(alpha: 0.58)
+        : const Color(0xffB48AAE).withValues(alpha: 0.35);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: baseColor,
+        gradient: LinearGradient(
+          begin: Alignment.topRight,
+          end: Alignment.centerLeft,
+          colors: gradientColors,
           stops: const [0, 0.42, 1],
         ),
       ),
@@ -162,8 +188,8 @@ class _HomeBackground extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xff7f743f).withValues(alpha: 0.48),
-                    const Color(0xff0d0d0d).withValues(alpha: 0),
+                    oliveBlob,
+                    baseColor.withValues(alpha: 0),
                   ],
                 ),
               ),
@@ -178,8 +204,8 @@ class _HomeBackground extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xff7a4d75).withValues(alpha: 0.58),
-                    const Color(0xff0d0d0d).withValues(alpha: 0),
+                    lilacBlob,
+                    baseColor.withValues(alpha: 0),
                   ],
                 ),
               ),
